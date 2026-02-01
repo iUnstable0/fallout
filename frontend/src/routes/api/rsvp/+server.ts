@@ -4,7 +4,7 @@ import {
   AIRTABLE_BASE_ID,
   AIRTABLE_TABLE_ID,
 } from "$env/static/private";
-import type { RequestHandler } from "./$types";
+import type { RequestHandler } from "./$types.js";
 
 export const POST: RequestHandler = async ({ request, getClientAddress }) => {
   if (!AIRTABLE_API_KEY || !AIRTABLE_BASE_ID || !AIRTABLE_TABLE_ID) {
