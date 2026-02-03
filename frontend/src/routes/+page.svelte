@@ -37,13 +37,13 @@
   <title>Fallout: Hardware Hackathon</title>
   <meta
     name="description"
-    content="A seven-day hardware hackathon in ShenZhen, China, April 2026. Design hardware projects, build them, & qualify!"
+    content="A seven-day hardware hackathon in ShenZhen, China in 2026. Design hardware projects, build them, & qualify!"
   />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Fallout: Hardware Hackathon" />
   <meta
     property="og:description"
-    content="A seven-day hardware hackathon in ShenZhen, China, April 2026. Design hardware projects, build them, & qualify!"
+    content="A seven-day hardware hackathon in ShenZhen, China in 2026. Design hardware projects, build them, & qualify!"
   />
   <meta property="og:site_name" content="Fallout" />
 </svelte:head>
@@ -61,7 +61,7 @@
   <div class="absolute top-[8%] md:top-[5%] lg:top-[8%] left-1/2 -translate-x-1/2 z-10 flex flex-col items-center w-full px-2 md:px-0">
     <!-- Date -->
     <div class="text-white text-lg md:text-xl lg:text-[36px] tracking-[0.05em] drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-      LATE APRIL 2026
+      DATE TBD, 2026
     </div>
 
     <!-- Logo with shadow for contrast -->
