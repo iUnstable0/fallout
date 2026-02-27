@@ -54,3 +54,4 @@ node_modules
 *.csv
 
 .playwright-mcp/
+docs/plans
