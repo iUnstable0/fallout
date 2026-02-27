@@ -118,6 +118,9 @@ Rails.application.routes.draw do
   get "auth/hca/callback" => "auth#create", as: :hca_callback
   delete "auth/signout" => "auth#destroy", as: :signout
 
+  get "auth/lapse/start" => "lapse_auth#start", as: :lapse_start
+  get "auth/lapse/callback" => "lapse_auth#callback", as: :lapse_callback
+
   get "sorry" => "bans#show", as: :sorry
 
   get "home" => "home#index", as: :home

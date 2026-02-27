@@ -37,6 +37,7 @@ class User < ApplicationRecord
   has_many :reviewed_ships, class_name: "Ship", foreign_key: :reviewer_id, dependent: :nullify, inverse_of: :reviewer
 
   encrypts :hca_token
+  encrypts :lapse_token
 
   validates :avatar, :display_name, :email, :timezone, presence: true
   validates :slack_id, presence: true
@@ -130,11 +131,9 @@ class User < ApplicationRecord
     is_adult = determine_is_adult(identity)
 
     if email.blank? || !(email =~ URI::MailTo::EMAIL_REGEXP)
-      Rails.logger.warn({
-        event: "hca_user_missing_or_invalid_email",
-        email: email,
-        identity: identity
-      }.to_json)
+      ErrorReporter.capture_message("HCA user missing or invalid email", level: :warning, contexts: {
+        user_creation: { email: email, hca_id: identity["id"] }
+      })
       raise StandardError, "HCA user has an invalid email: #{email.inspect}"
     end
 
@@ -204,14 +203,9 @@ class User < ApplicationRecord
 
     update!(updates)
   rescue StandardError => e
-    Rails.logger.tagged("ProfileRefresh") do
-      Rails.logger.error({
-        event: "slack_profile_refresh_failed",
-        user_id: id,
-        slack_id: slack_id,
-        error: e.message
-      }.to_json)
-    end
+    ErrorReporter.capture_exception(e, contexts: {
+      profile_refresh: { user_id: id, slack_id: slack_id }
+    })
   end
 
   def first_ref
@@ -257,13 +251,13 @@ class User < ApplicationRecord
         retry
       end
 
-      Rails.logger.error("Slack API ratelimit, max retries on #{slack_id}.")
+      ErrorReporter.capture_exception(e, contexts: { slack: { slack_id: slack_id, retries: retries } })
       nil
     rescue Slack::Web::Api::Errors::SlackError => e
-      Rails.logger.warn("Slack API error for #{slack_id}: #{e.message}")
+      ErrorReporter.capture_exception(e, level: :warning, contexts: { slack: { slack_id: slack_id } })
       nil
     rescue StandardError => e
-      Rails.logger.warn("Slack API error for #{slack_id}: #{e.message}")
+      ErrorReporter.capture_exception(e, level: :warning, contexts: { slack: { slack_id: slack_id } })
       nil
     end
   end

@@ -50,13 +50,15 @@ module HcaService
     end
 
     unless response.success?
-      Rails.logger.error("HCA token exchange failed: #{response.status} - #{response.body}")
+      ErrorReporter.capture_message("HCA token exchange failed", level: :error, contexts: {
+        hca: { status: response.status, body: response.body.truncate(500) }
+      })
       return nil
     end
 
     JSON.parse(response.body)
   rescue StandardError => e
-    Rails.logger.error("HCA token exchange error: #{e.class}: #{e.message}")
+    ErrorReporter.capture_exception(e, contexts: { hca: { action: "token_exchange" } })
     nil
   end
 
@@ -69,13 +71,15 @@ module HcaService
     end
 
     unless response.success?
-      Rails.logger.warn("HCA /me fetch failed with status #{response.status}")
+      ErrorReporter.capture_message("HCA /me fetch failed", level: :warning, contexts: {
+        hca: { status: response.status }
+      })
       return nil
     end
 
     JSON.parse(response.body)
   rescue StandardError => e
-    Rails.logger.warn("HCA /me fetch error: #{e.class}: #{e.message}")
+    ErrorReporter.capture_exception(e, level: :warning, contexts: { hca: { action: "me" } })
     nil
   end
 

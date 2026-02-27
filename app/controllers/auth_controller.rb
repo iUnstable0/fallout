@@ -12,13 +12,9 @@ class AuthController < ApplicationController
 
   def create
     if params[:state] != session[:state]
-      Rails.logger.tagged("Authentication") do
-        Rails.logger.error({
-          event: "csrf_validation_failed",
-          expected_state: session[:state],
-          received_state: params[:state]
-        }.to_json)
-      end
+      ErrorReporter.capture_message("Authentication CSRF validation failed", level: :error, contexts: {
+        authentication: { expected_state: session[:state], received_state: params[:state] }
+      })
       session[:state] = nil
       redirect_to root_path, alert: "Authentication failed due to CSRF token mismatch"
       return
@@ -38,12 +34,7 @@ class AuthController < ApplicationController
 
       redirect_to root_path, notice: "Welcome back, #{user.display_name}!"
     rescue StandardError => e
-      Rails.logger.tagged("Authentication") do
-        Rails.logger.error({
-          event: "authentication_failed",
-          error: e.message
-        }.to_json)
-      end
+      ErrorReporter.capture_exception(e)
       redirect_to root_path, alert: e.message
     end
   end

@@ -1,0 +1,99 @@
+require "faraday"
+require "json"
+
+module LapseService
+  class Error < StandardError; end
+
+  module_function
+
+  def host
+    "https://lapse.hackclub.com"
+  end
+
+  def authorize_url(redirect_uri, state)
+    params = {
+      client_id: ENV.fetch("LAPSE_CLIENT_ID", nil),
+      redirect_uri: redirect_uri,
+      response_type: "code",
+      state: state
+    }
+    "#{host}/oauth/authorize?#{params.to_query}"
+  end
+
+  def exchange_code_for_token(code, redirect_uri)
+    response = connection.post("/api/oauth/token") do |req|
+      req.headers["Content-Type"] = "application/x-www-form-urlencoded"
+      req.body = {
+        grant_type: "authorization_code",
+        code: code,
+        redirect_uri: redirect_uri,
+        client_id: ENV.fetch("LAPSE_CLIENT_ID", nil),
+        client_secret: ENV.fetch("LAPSE_CLIENT_SECRET", nil)
+      }.to_query
+    end
+
+    Rails.logger.debug("Lapse token exchange response: status=#{response.status} body=#{response.body.truncate(500)}")
+
+    unless response.success?
+      ErrorReporter.capture_message("Lapse token exchange failed", level: :error, contexts: {
+        lapse: { status: response.status, body: response.body.truncate(500) }
+      })
+      return nil
+    end
+
+    JSON.parse(response.body)
+  rescue StandardError => e
+    ErrorReporter.capture_exception(e, contexts: { lapse: { action: "token_exchange" } })
+    nil
+  end
+
+  def hackatime_projects(access_token)
+    raise ArgumentError, "access_token is required" if access_token.blank?
+
+    response = connection.get("/api/rest/user/hackatimeProjects") do |req|
+      req.headers["Authorization"] = "Bearer #{access_token}"
+      req.headers["Accept"] = "application/json"
+    end
+
+    unless response.success?
+      ErrorReporter.capture_message("Lapse hackatime projects fetch failed", level: :warning, contexts: {
+        lapse: { status: response.status }
+      })
+      return nil
+    end
+
+    data = JSON.parse(response.body)
+    data.dig("data", "projects")
+  rescue StandardError => e
+    ErrorReporter.capture_exception(e, contexts: { lapse: { action: "hackatime_projects" } })
+    nil
+  end
+
+  def timelapses_for_project(access_token, project_key)
+    raise ArgumentError, "access_token is required" if access_token.blank?
+    raise ArgumentError, "project_key is required" if project_key.blank?
+
+    response = connection.get("/api/rest/hackatime/myTimelapsesForProject") do |req|
+      req.headers["Authorization"] = "Bearer #{access_token}"
+      req.headers["Accept"] = "application/json"
+      req.params["projectKey"] = project_key
+    end
+
+    unless response.success?
+      ErrorReporter.capture_message("Lapse timelapses fetch failed", level: :warning, contexts: {
+        lapse: { status: response.status, project_key: project_key }
+      })
+      return nil
+    end
+
+    data = JSON.parse(response.body)
+    data.dig("data", "timelapses")
+  rescue StandardError => e
+    ErrorReporter.capture_exception(e, contexts: { lapse: { action: "timelapses_for_project", project_key: project_key } })
+    nil
+  end
+
+  def connection
+    @connection ||= Faraday.new(url: host)
+  end
+end
