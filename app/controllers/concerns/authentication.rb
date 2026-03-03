@@ -60,12 +60,18 @@ module Authentication
   end
 
   def redirect_discarded_trial_user!
-    return unless current_user&.trial? && current_user.discarded?
+    return unless current_user&.discarded?
 
+    is_trial = current_user.trial?
     @current_user = nil
     terminate_session
-    cookies.delete(:trial_device_token)
-    redirect_to signin_path, notice: "Your trial session has expired. Please sign in to continue."
+
+    if is_trial
+      cookies.delete(:trial_device_token)
+      redirect_to signin_path, notice: "Your trial session has expired. Please sign in to continue."
+    else
+      redirect_to root_path, notice: "Your account is no longer active."
+    end
   end
 
   def terminate_session

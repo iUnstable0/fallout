@@ -1,5 +1,5 @@
 class ProjectsController < ApplicationController
-  allow_trial_access
+  allow_trial_access only: %i[index show new create edit update destroy] # Trial users can manage their single project
   before_action :set_project, only: %i[show edit update destroy]
 
   def index

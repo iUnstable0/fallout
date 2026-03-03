@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 class OnboardingController < ApplicationController
-  allow_trial_access
-  skip_before_action :redirect_to_onboarding!
-  skip_authorization
+  allow_trial_access only: %i[show update] # Both trial and full users complete onboarding
+  skip_before_action :redirect_to_onboarding!, only: %i[show update] # This IS the onboarding destination
+  skip_authorization only: %i[show update] # Responses scoped to current_user, no authorizable resource
 
   def show
     return redirect_to dashboard_path if current_user.onboarded?

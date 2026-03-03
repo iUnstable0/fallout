@@ -1,6 +1,7 @@
 class TrialSessionsController < ApplicationController
-  allow_unauthenticated_access only: %i[create]
-  skip_onboarding_redirect only: %i[create]
+  allow_unauthenticated_access only: %i[create] # Unauthenticated users create trial sessions
+  skip_onboarding_redirect only: %i[create] # Session creation happens before onboarding
+  skip_authorization only: %i[create] # No authorizable resource
   rate_limit to: 1, within: 10.minutes, only: :create, with: -> { redirect_to root_path, alert: "Try again later." }
 
   def create
@@ -23,6 +24,7 @@ class TrialSessionsController < ApplicationController
       value: device_token,
       httponly: true,
       secure: Rails.env.production?,
+      same_site: :strict,
       expires: 1.year
     }
 

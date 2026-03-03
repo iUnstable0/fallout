@@ -1,6 +1,7 @@
 class MarkdownController < ApplicationController
-  allow_unauthenticated_access only: %i[show]
-  allow_trial_access only: %i[show]
+  allow_unauthenticated_access only: %i[show] # Public documentation
+  allow_trial_access only: %i[show] # Trial users can read docs
+  skip_authorization only: %i[show] # No authorizable resource
 
   def show
     slug = params[:slug].to_s

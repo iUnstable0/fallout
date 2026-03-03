@@ -1,6 +1,6 @@
 class Rack::Attack
   # Cache store for tracking requests
-  Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
+  Rack::Attack.cache.store = Rails.cache
 
   # Throttle all requests by IP (300 requests per 5 minutes)
   throttle("req/ip", limit: 300, period: 5.minutes) do |req|

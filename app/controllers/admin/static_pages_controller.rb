@@ -1,5 +1,6 @@
 class Admin::StaticPagesController < Admin::ApplicationController
-  def index
+  skip_authorization only: %i[index] # No authorizable resource; staff access enforced by Admin::ApplicationController
+  skip_policy_scope only: %i[index] # No scoped collection
 
-  end
+  def index; end
 end

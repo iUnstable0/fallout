@@ -1,8 +1,9 @@
 class AuthController < ApplicationController
-  allow_unauthenticated_access only: %i[new create]
-  allow_trial_access only: %i[new create destroy]
-  skip_onboarding_redirect
-  skip_before_action :redirect_banned_user!, only: %i[destroy]
+  allow_unauthenticated_access only: %i[new create] # OAuth flow must work without a session
+  allow_trial_access only: %i[new create destroy] # Trial users can upgrade to HCA or sign out
+  skip_onboarding_redirect only: %i[new create destroy] # Auth flow must complete before onboarding can run
+  skip_authorization only: %i[new create destroy] # No authorizable resource
+  skip_before_action :redirect_banned_user!, only: %i[destroy] # Banned users must be able to sign out
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to signin_path, alert: "Try again later." }
 
   def new
@@ -50,7 +51,7 @@ class AuthController < ApplicationController
       redirect_to root_path, notice: "Welcome back, #{user.display_name}!"
     rescue StandardError => e
       ErrorReporter.capture_exception(e)
-      redirect_to root_path, alert: e.message
+      redirect_to root_path, alert: "Authentication failed. Please try again."
     end
   end
 

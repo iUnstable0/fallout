@@ -1,5 +1,8 @@
 class DashboardController < ApplicationController
-  allow_trial_access
+  allow_trial_access only: %i[index] # Trial users can view their dashboard
+  skip_authorization only: %i[index] # No authorizable resource
+  skip_policy_scope only: %i[index] # No scoped collection
+
   def index
     render inertia: {
       user: {

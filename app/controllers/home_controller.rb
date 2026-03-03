@@ -1,4 +1,7 @@
 class HomeController < ApplicationController
+  skip_authorization only: %i[index] # No authorizable resource
+  skip_policy_scope only: %i[index] # No scoped collection
+
   def index
     render inertia: {
       user: {
