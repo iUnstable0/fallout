@@ -75,6 +75,10 @@ export default function Path() {
   const [grass] = useState(generateGrass)
 
   const [ready, setReady] = useState(false)
+  const [windowSize, setWindowSize] = useState(() => ({
+    w: typeof window !== 'undefined' ? window.innerWidth : 1920,
+    h: typeof window !== 'undefined' ? window.innerHeight : 900,
+  }))
   const scrollRef = useRef(0)
   const rafRef = useRef(0)
   const backBillboardRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -85,8 +89,23 @@ export default function Path() {
   const frontCtxRef = useRef<CanvasRenderingContext2D | null>(null)
   const grassImagesRef = useRef<Map<string, HTMLImageElement>>(new Map())
 
+  useEffect(() => {
+    let timeout: number
+    const handleResize = () => {
+      clearTimeout(timeout)
+      timeout = window.setTimeout(() => {
+        setWindowSize({ w: window.innerWidth, h: window.innerHeight })
+      }, 300)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      clearTimeout(timeout)
+    }
+  }, [])
+
   const { planetRadius, inflectionScreenY, inflectionGroundY, middleGroundY } = useMemo(() => {
-    const H = typeof window !== 'undefined' ? window.innerHeight : 900
+    const H = windowSize.h
     const O = PERSPECTIVE_OFFSET_PX
     const P = PERSPECTIVE
     const cosA = Math.cos((GROUND_ANGLE * Math.PI) / 180)
@@ -141,15 +160,15 @@ export default function Path() {
       inflectionGroundY: peakD,
       middleGroundY: (mLo + mHi) / 2,
     }
-  }, [])
+  }, [windowSize.h])
 
   const firstBillboardY = billboards[0].y
   const lastBillboardY = billboards[billboards.length - 1].y
   const maxScroll = (lastBillboardY - firstBillboardY) / SCROLL_SPEED
 
   useEffect(() => {
-    const W = window.innerWidth
-    const H = window.innerHeight
+    const W = windowSize.w
+    const H = windowSize.h
     const O = PERSPECTIVE_OFFSET_PX
     const P = PERSPECTIVE
     const dpr = window.devicePixelRatio || 1
@@ -302,7 +321,7 @@ export default function Path() {
       window.removeEventListener('scroll', handleScroll)
       cancelAnimationFrame(rafRef.current)
     }
-  }, [billboards, grass, planetRadius, inflectionGroundY, middleGroundY, lastBillboardY])
+  }, [billboards, grass, planetRadius, inflectionGroundY, middleGroundY, lastBillboardY, windowSize.w])
 
   return (
     <>

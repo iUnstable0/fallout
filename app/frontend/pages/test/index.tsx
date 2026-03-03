@@ -358,7 +358,10 @@ export default function TestIndex() {
         )}
 
         {/* Back grass canvas — behind billboards and cover */}
-        <canvas ref={backCanvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', visibility: ready ? 'visible' : 'hidden' }} />
+        <canvas
+          ref={backCanvasRef}
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', visibility: ready ? 'visible' : 'hidden' }}
+        />
 
         {/* 3D scene — billboards PAST inflection (behind cover) */}
         <div
@@ -424,7 +427,10 @@ export default function TestIndex() {
         />
 
         {/* Front grass canvas — in front of cover, behind front billboards */}
-        <canvas ref={frontCanvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', visibility: ready ? 'visible' : 'hidden' }} />
+        <canvas
+          ref={frontCanvasRef}
+          style={{ position: 'absolute', inset: 0, pointerEvents: 'none', visibility: ready ? 'visible' : 'hidden' }}
+        />
 
         {/* 3D scene — billboards BEFORE inflection (in front of cover) */}
         <div
