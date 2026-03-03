@@ -1,5 +1,5 @@
 ---
-applyTo: "**"
+applyTo: '**'
 ---
 
 Keep your changes as low impact as possible. You do not need to give me a summary of changes. You do not need to test the changes. Try to reference other parts of the codebase to ensure your changes are consistent with the existing code style and practices. Keep your responses concise and focused.
@@ -11,6 +11,8 @@ This project uses ruby 3.4.4, rails 8.1.2 with React 19 and tailwind 4.1.18 thro
 Inertia acts as the internal bridge between rails and React. Please be careful what objects are passed across, as all attributes (even if unused in the frontend) are sent and can be viewed through developer tools. Inertia docs for LLMs is at: https://inertia-rails.dev/llms-full.txt
 
 Pundit policies are also used and should be modified to fit. Please be careful as this pertains to security. If you are not sure about how to modify a policy, ask for clarification. Always ensure that you are following the principle of least privilege when modifying policies. Only give access to what is necessary for the feature to function properly. Do not give access to more than what is needed. Pundit documentation is available at: https://www.rubydoc.info/gems/pundit
+
+We have two types of users, full users (who have authenticated through HCA), and trial users, who we have not confirmed the identity of. Trial users log in via an email, at the current state, trial users can only access their data, as we use a device cookie. Even if multiple people create trial accounts with the same email, they cannot access each other's data. Only full users can access their data across devices and access non public (available without auth) data. Trial users have limited access to features and data. When making changes, ensure that you are considering the implications for both types of users and modifying policies accordingly. Use pundit to enforce these access controls at a lower level.
 
 HCB controls money for the program, DO NOT EDIT ANY CODE RELATED TO HCB WITHOUT EXPLICIT WRITTEN APPROVAL. Alert in the chat that you're making changes to HCB code before doing so. Do not run any tests and console code containing stuff related without EXPLICIT WRITTEN APPROVAL.
 
