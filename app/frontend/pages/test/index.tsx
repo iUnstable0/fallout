@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 const HORIZON_PCT = 0
 const PERSPECTIVE = 800
@@ -75,6 +75,7 @@ export default function TestIndex() {
   const [billboards] = useState(generateBillboards)
   const [grass] = useState(generateGrass)
 
+  const [ready, setReady] = useState(false)
   const scrollRef = useRef(0)
   const rafRef = useRef(0)
   const backBillboardRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -151,7 +152,7 @@ export default function TestIndex() {
   const lastBillboardY = billboards[billboards.length - 1].y
   const maxScroll = (lastBillboardY - firstBillboardY) / SCROLL_SPEED
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     const W = window.innerWidth
     const H = window.innerHeight
     const O = PERSPECTIVE_OFFSET_PX
@@ -307,6 +308,7 @@ export default function TestIndex() {
 
     window.addEventListener('scroll', handleScroll, { passive: true })
     update()
+    setReady(true)
     return () => {
       window.removeEventListener('scroll', handleScroll)
       cancelAnimationFrame(rafRef.current)
@@ -356,7 +358,7 @@ export default function TestIndex() {
         )}
 
         {/* Back grass canvas — behind billboards and cover */}
-        <canvas ref={backCanvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+        <canvas ref={backCanvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', visibility: ready ? 'visible' : 'hidden' }} />
 
         {/* 3D scene — billboards PAST inflection (behind cover) */}
         <div
@@ -365,6 +367,7 @@ export default function TestIndex() {
             inset: 0,
             perspective: `${PERSPECTIVE}px`,
             perspectiveOrigin: `50% calc(${HORIZON_PCT}% + ${PERSPECTIVE_OFFSET_PX}px)`,
+            visibility: ready ? 'visible' : 'hidden',
           }}
         >
           <div
@@ -398,6 +401,7 @@ export default function TestIndex() {
                 <div style={{ width: '100%', height: '100%', transform: `translateY(${BILLBOARD_Y_OFFSET}px)` }}>
                   <img
                     src={b.src}
+                    fetchPriority="high"
                     style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'bottom center' }}
                   />
                 </div>
@@ -420,7 +424,7 @@ export default function TestIndex() {
         />
 
         {/* Front grass canvas — in front of cover, behind front billboards */}
-        <canvas ref={frontCanvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+        <canvas ref={frontCanvasRef} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', visibility: ready ? 'visible' : 'hidden' }} />
 
         {/* 3D scene — billboards BEFORE inflection (in front of cover) */}
         <div
@@ -430,6 +434,7 @@ export default function TestIndex() {
             perspective: `${PERSPECTIVE}px`,
             perspectiveOrigin: `50% calc(${HORIZON_PCT}% + ${PERSPECTIVE_OFFSET_PX}px)`,
             pointerEvents: 'none',
+            visibility: ready ? 'visible' : 'hidden',
           }}
         >
           <div
@@ -484,6 +489,7 @@ export default function TestIndex() {
                 <div style={{ width: '100%', height: '100%', transform: `translateY(${BILLBOARD_Y_OFFSET}px)` }}>
                   <img
                     src={b.src}
+                    fetchPriority="high"
                     style={{ width: '100%', height: '100%', objectFit: 'contain', objectPosition: 'bottom center' }}
                   />
                 </div>
