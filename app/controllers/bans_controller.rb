@@ -2,7 +2,7 @@ class BansController < ApplicationController
   allow_trial_access only: %i[show] # Banned trial users must see ban notice
   skip_onboarding_redirect only: %i[show] # Ban notice takes priority over onboarding
   skip_before_action :redirect_banned_user!, only: %i[show] # This IS the ban destination
-  skip_authorization only: %i[show] # No authorizable resource
+  skip_after_action :verify_authorized, only: %i[show] # No authorizable resource
 
   def show
     redirect_to root_path unless current_user&.is_banned?

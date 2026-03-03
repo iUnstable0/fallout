@@ -2,7 +2,7 @@ class AuthController < ApplicationController
   allow_unauthenticated_access only: %i[new create] # OAuth flow must work without a session
   allow_trial_access only: %i[new create destroy] # Trial users can upgrade to HCA or sign out
   skip_onboarding_redirect only: %i[new create destroy] # Auth flow must complete before onboarding can run
-  skip_authorization only: %i[new create destroy] # No authorizable resource
+  skip_after_action :verify_authorized, only: %i[new create destroy] # No authorizable resource
   skip_before_action :redirect_banned_user!, only: %i[destroy] # Banned users must be able to sign out
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to signin_path, alert: "Try again later." }
 

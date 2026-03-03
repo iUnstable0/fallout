@@ -1,6 +1,6 @@
 class LapseAuthController < ApplicationController
   skip_onboarding_redirect only: %i[start callback] # OAuth flow must complete regardless of onboarding state
-  skip_authorization only: %i[start callback] # No authorizable resource
+  skip_after_action :verify_authorized, only: %i[start callback] # No authorizable resource
   rate_limit to: 10, within: 3.minutes, only: :callback, with: -> { redirect_to root_path, alert: "Try again later." }
 
   def start

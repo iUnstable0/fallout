@@ -1,7 +1,7 @@
 class TrialSessionsController < ApplicationController
   allow_unauthenticated_access only: %i[create] # Unauthenticated users create trial sessions
   skip_onboarding_redirect only: %i[create] # Session creation happens before onboarding
-  skip_authorization only: %i[create] # No authorizable resource
+  skip_after_action :verify_authorized, only: %i[create] # No authorizable resource
   rate_limit to: 1, within: 10.minutes, only: :create, with: -> { redirect_to root_path, alert: "Try again later." }
 
   def create
