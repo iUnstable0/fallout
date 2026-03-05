@@ -20,7 +20,7 @@ export default function PathNode({ index, interactive = true }: { index: number;
       {index === 0 && interactive && (
         <ModalLink
           href="/projects/onboarding"
-          style={{ display: 'block' }}
+          className="outline-0"
           onStart={() => setShowTooltip(false)}
           onAfterLeave={() => setShowTooltip(true)}
         >
@@ -28,9 +28,7 @@ export default function PathNode({ index, interactive = true }: { index: number;
         </ModalLink>
       )}
       {index === 0 && !interactive && starImage}
-      {index === 3 && (
-        <img src="/path/slack.png" fetchPriority="high" style={{ width: '100%', display: 'block' }} />
-      )}
+      {index === 3 && <img src="/path/slack.png" fetchPriority="high" style={{ width: '100%', display: 'block' }} />}
 
       {index !== 0 && index !== 3 && (
         <img

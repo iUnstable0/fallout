@@ -33,7 +33,6 @@ export default function DashboardIndex() {
   const [notPressed] = useState<boolean>(true)
   const [loggedIn] = useState(false)
 
-
   const pathNodes = useMemo(() => Array.from({ length: 60 }, (_, i) => <PathNode key={i} index={i} />), [])
 
   useEffect(() => {
@@ -73,7 +72,7 @@ export default function DashboardIndex() {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger>
-            <ModalLink href="/projects">
+            <ModalLink href="/projects" className="outline-0">
               <img src="/icon/project.png" alt="Projects" className="w-25 cursor-pointer" />
             </ModalLink>
           </TooltipTrigger>
@@ -89,7 +88,10 @@ export default function DashboardIndex() {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger>
-            <button className="col-span-2 -mt-4" onClick={() => notify('alert', "The clearing isn't open yet. Check back later!")}>
+            <button
+              className="col-span-2 -mt-4"
+              onClick={() => notify('alert', "The clearing isn't open yet. Check back later!")}
+            >
               <img src="/icon/clearing.png" alt="Clearing" className="w-50 cursor-pointer" />
             </button>
           </TooltipTrigger>
