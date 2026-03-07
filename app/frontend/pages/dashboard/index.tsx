@@ -36,7 +36,13 @@ export default function DashboardIndex() {
   const [notPressed] = useState<boolean>(true)
   const [loggedIn] = useState(false)
 
-  const { visitModal } = useModalStack()
+  const { visitModal, stack } = useModalStack()
+
+  const [autoOpenModal] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const params = new URLSearchParams(window.location.search)
+    return params.get('open') === 'journal'
+  })
 
   const pathNodes = useMemo(() => Array.from({ length: 60 }, (_, i) => <PathNode key={i} index={i} hasProjects={has_projects} />), [has_projects])
 
@@ -118,6 +124,10 @@ export default function DashboardIndex() {
       </div>
 
       <Path nodes={pathNodes} />
+
+      {autoOpenModal && stack.length === 0 && (
+        <div className="fixed inset-0 z-30 bg-black/75" />
+      )}
     </>
   )
 }
