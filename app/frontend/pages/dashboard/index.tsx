@@ -38,7 +38,7 @@ export default function DashboardIndex() {
 
   const { visitModal, stack } = useModalStack()
 
-  const [autoOpenModal] = useState(() => {
+  const [autoOpenModal, setAutoOpenModal] = useState(() => {
     if (typeof window === 'undefined') return false
     const params = new URLSearchParams(window.location.search)
     return params.get('open') === 'journal'
@@ -67,7 +67,7 @@ export default function DashboardIndex() {
       const newUrl = params.toString() ? `${window.location.pathname}?${params}` : window.location.pathname
       window.history.replaceState({}, '', newUrl)
       const modalUrl = projectId ? `/projects/${projectId}/journal_entries/new` : '/journal_entries/new'
-      visitModal(modalUrl, { config: { duration: 0 } })
+      visitModal(modalUrl, { config: { duration: 0 } }).then(() => setAutoOpenModal(false))
     }
   }, [])
 
