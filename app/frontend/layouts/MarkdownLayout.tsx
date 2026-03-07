@@ -17,9 +17,9 @@ interface MenuSection {
 
 type MenuItem = MenuLink | MenuSection
 
-function NavLink({ href, active, children }: { href: string; active: boolean; children: ReactNode }) {
+function NavLink({ href, active, children, subpage = false }: { href: string; active: boolean; children: ReactNode; subpage?: boolean }) {
   return (
-    <Link href={href} className={`block px-3 py-1.5 rounded ${active ? 'bg-brown text-light-brown font-bold' : ''}`}>
+    <Link href={href} className={`block px-3 py-1.5 ${subpage ? 'rounded-r' : 'rounded'} ${active ? 'bg-brown text-light-brown font-bold' : ''}`}>
       {children}
     </Link>
   )
@@ -60,7 +60,7 @@ function CollapsibleSection({
       {open && (
         <div className="ml-3 border-l-2 border-dark-brown/20 flex flex-col gap-0.5 mt-0.5">
           {items.map((item) => (
-            <NavLink key={item.path} href={item.path} active={currentPath === item.path}>
+            <NavLink key={item.path} href={item.path} active={currentPath === item.path} subpage>
               {item.title}
             </NavLink>
           ))}
@@ -79,6 +79,10 @@ export default function MarkdownLayout({ children }: { children: ReactNode }) {
       <aside className="fixed top-0 left-0 h-screen w-80 p-4 flex z-10">
         <Frame className="flex-1">
           <nav className="flex flex-col gap-0.5 p-2 overflow-y-auto h-full">
+            <Link href="/path" className="block px-3 py-1.5">
+              ← Back to the Path
+            </Link>
+            <hr className="border-dark-brown/20 my-1" />
             <NavLink href="/docs" active={currentPath === '/docs'}>
               Overview
             </NavLink>

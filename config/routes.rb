@@ -128,10 +128,10 @@ Rails.application.routes.draw do
   get "onboarding" => "onboarding#show", as: :onboarding
   post "onboarding" => "onboarding#update"
 
-  get "dashboard" => "dashboard#index", as: :dashboard
+  get "path" => "path#index", as: :path
 
   resources :projects do
-    get "onboarding", on: :collection # Project onboarding modal accessed from dashboard path
+    get "onboarding", on: :collection # Project onboarding modal accessed from path page
     resources :journal_entries, only: [ :new, :create ]
   end
 

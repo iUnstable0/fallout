@@ -29,7 +29,7 @@ class AuthController < ApplicationController
 
       if current_user&.trial?
         if current_user.email != user.email
-          redirect_to dashboard_path, alert: "This email already has an account! Please sign out and log in with HCA."
+          redirect_to path_path, alert: "This email already has an account! Please sign out and log in with HCA."
           return
         end
 

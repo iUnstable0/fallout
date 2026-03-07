@@ -7,7 +7,7 @@ class OnboardingController < ApplicationController
   skip_after_action :verify_policy_scoped # No index action; no policy-scoped queries
 
   def show
-    return redirect_to dashboard_path if current_user.onboarded?
+    return redirect_to path_path if current_user.onboarded?
 
     step = requested_step || current_step
     return complete_onboarding if step.nil?
@@ -27,7 +27,7 @@ class OnboardingController < ApplicationController
   end
 
   def update
-    return redirect_to dashboard_path if current_user.onboarded?
+    return redirect_to path_path if current_user.onboarded?
 
     step = OnboardingConfig.find_step(params[:question_key])
     unless step
@@ -95,6 +95,6 @@ class OnboardingController < ApplicationController
 
   def complete_onboarding
     current_user.update!(onboarded: true)
-    redirect_to dashboard_path, notice: "Welcome to the dashboard!"
+    redirect_to path_path, notice: "Welcome to the path!"
   end
 end

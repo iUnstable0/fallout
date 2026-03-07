@@ -3,14 +3,14 @@ import type { ReactNode } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import type { SharedProps } from '@/types'
 // @ts-expect-error useModalStack lacks type declarations in this beta package
-import { ModalLink, useModalStack } from '@inertiaui/modal-react'
+import { useModalStack } from '@inertiaui/modal-react'
 import Shop from '@/components/Shop'
 import Projects from '@/components/Projects'
-import Path from '@/components/dashboard/Path'
-import PathNode from '@/components/dashboard/PathNode'
-import SignUpCta from '@/components/dashboard/SignUpCta'
-import Leaderboard from '@/components/dashboard/Leaderboard'
-import Header from '@/components/dashboard/Header'
+import Path from '@/components/path/Path'
+import PathNode from '@/components/path/PathNode'
+import SignUpCta from '@/components/path/SignUpCta'
+import Leaderboard from '@/components/path/Leaderboard'
+import Header from '@/components/path/Header'
 import FlashMessages from '@/components/FlashMessages'
 import { notify } from '@/lib/notifications'
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/shared/Tooltip'
@@ -25,7 +25,7 @@ type PageProps = {
   has_projects: boolean
 }
 
-export default function DashboardIndex() {
+export default function PathIndex() {
   const {
     user,
     has_projects,
@@ -44,7 +44,10 @@ export default function DashboardIndex() {
     return params.get('open') === 'journal'
   })
 
-  const pathNodes = useMemo(() => Array.from({ length: 60 }, (_, i) => <PathNode key={i} index={i} hasProjects={has_projects} />), [has_projects])
+  const pathNodes = useMemo(
+    () => Array.from({ length: 60 }, (_, i) => <PathNode key={i} index={i} hasProjects={has_projects} />),
+    [has_projects],
+  )
 
   useEffect(() => {
     const isMobile = window.innerWidth < 640
@@ -96,9 +99,9 @@ export default function DashboardIndex() {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger>
-            <ModalLink href="/projects" className="outline-0">
+            <button onClick={() => notify('alert', 'This is coming soon. Check back later!')}>
               <img src="/icon/project.png" alt="Projects" className="w-25 cursor-pointer" />
-            </ModalLink>
+            </button>
           </TooltipTrigger>
           <TooltipContent>Projects</TooltipContent>
         </Tooltip>
@@ -125,11 +128,9 @@ export default function DashboardIndex() {
 
       <Path nodes={pathNodes} />
 
-      {autoOpenModal && stack.length === 0 && (
-        <div className="fixed inset-0 z-30 bg-black/75" />
-      )}
+      {autoOpenModal && stack.length === 0 && <div className="fixed inset-0 z-30 bg-black/75" />}
     </>
   )
 }
 
-DashboardIndex.layout = (page: ReactNode) => page
+PathIndex.layout = (page: ReactNode) => page

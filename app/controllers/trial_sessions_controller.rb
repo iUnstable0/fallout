@@ -6,7 +6,7 @@ class TrialSessionsController < ApplicationController
   rate_limit to: 10, within: 3.minutes, only: :create, with: -> { redirect_to root_path, alert: "Try again later." }
 
   def create
-    redirect_to dashboard_path and return if user_signed_in? && !current_user.trial? # Verified users cannot create trial sessions
+    redirect_to path_path and return if user_signed_in? && !current_user.trial? # Verified users cannot create trial sessions
 
     email = params[:email].to_s.strip.downcase
 
@@ -35,6 +35,6 @@ class TrialSessionsController < ApplicationController
     }
 
     session[:user_id] = trial_user.id
-    redirect_to dashboard_path, notice: "Welcome!"
+    redirect_to path_path, notice: "Welcome!"
   end
 end

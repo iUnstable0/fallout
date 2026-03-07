@@ -1,5 +1,5 @@
-class DashboardController < ApplicationController
-  allow_trial_access only: %i[index] # Trial users can view their dashboard
+class PathController < ApplicationController
+  allow_trial_access only: %i[index] # Trial users can view their path
   skip_after_action :verify_authorized, only: %i[index] # No authorizable resource
   skip_after_action :verify_policy_scoped, only: %i[index] # No scoped collection
 

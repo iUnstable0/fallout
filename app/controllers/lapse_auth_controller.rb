@@ -37,7 +37,7 @@ class LapseAuthController < ApplicationController
     return_to = session.delete(:lapse_return_to)
     return_project_id = session.delete(:lapse_return_project_id)
     redirect_path = if return_to == "journal"
-      dashboard_path(open: "journal", project_id: return_project_id)
+      path_path(open: "journal", project_id: return_project_id)
     else
       root_path
     end

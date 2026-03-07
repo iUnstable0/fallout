@@ -19,7 +19,7 @@ function ProjectsOnboarding({ is_modal }: { is_modal: boolean }) {
     if (processing) return
     setProcessing(true)
     const data: Record<string, string> = { name, description }
-    if (is_modal) data.return_to = 'dashboard'
+    if (is_modal) data.return_to = 'path'
     router.post('/projects', data, {
       onFinish: () => setProcessing(false),
       onSuccess: () => modalRef.current?.close()
