@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type ReactNod
 const HORIZON_PCT = 0
 const PERSPECTIVE = 800
 const MAX_WIDTH = 1024 // 5xl
-const RIGHT_MARGIN = 150 // px reserved on the right for sidebar content (e.g. leaderboard)
+const RIGHT_MARGIN = 100 // px reserved on the right for sidebar content (e.g. leaderboard)
 const GROUND_ANGLE = 60 // degrees
 const LANES = 3
 const BILLBOARD_CULL_H = 600 // estimated max height for culling buffer
