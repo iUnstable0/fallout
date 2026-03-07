@@ -2,7 +2,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState, type ReactNod
 
 const HORIZON_PCT = 0
 const PERSPECTIVE = 800
-const MAX_WIDTH = 1152 // 6xl
+const MAX_WIDTH = 1024 // 5xl
+const RIGHT_MARGIN = 150 // px reserved on the right for sidebar content (e.g. leaderboard)
 const GROUND_ANGLE = 60 // degrees
 const LANES = 3
 const BILLBOARD_CULL_H = 600 // estimated max height for culling buffer
@@ -99,6 +100,7 @@ export default function Path({ nodes }: PathProps) {
     w: typeof window !== 'undefined' ? window.innerWidth : 1920,
     h: typeof window !== 'undefined' ? window.innerHeight : 900,
   }))
+  const centerPct = ((windowSize.w - RIGHT_MARGIN) / 2 / windowSize.w) * 100
   const scrollRef = useRef(0)
   const rafRef = useRef(0)
   const backBillboardRefs = useRef<(HTMLDivElement | null)[]>([])
@@ -199,6 +201,7 @@ export default function Path({ nodes }: PathProps) {
     const P = PERSPECTIVE
     const dpr = window.devicePixelRatio || 1
     const invTwoR = 1 / (2 * planetRadius)
+    const centerX = (W - RIGHT_MARGIN) / 2
 
     const setupCanvas = (canvas: HTMLCanvasElement) => {
       canvas.width = W * dpr
@@ -244,7 +247,7 @@ export default function Path({ nodes }: PathProps) {
         if (screenY - h > H || screenY < 0) continue
 
         const pivotX = (g.x / 100) * W + GRASS_W / 2
-        const screenX = W / 2 + (pivotX - W / 2) * perspScale
+        const screenX = centerX + (pivotX - centerX) * perspScale
         const w = GRASS_W * s
         const yOff = GRASS_Y_OFFSET * s
 
@@ -393,7 +396,7 @@ export default function Path({ nodes }: PathProps) {
             position: 'absolute',
             inset: 0,
             perspective: `${PERSPECTIVE}px`,
-            perspectiveOrigin: `50% calc(${HORIZON_PCT}% + ${PERSPECTIVE_OFFSET_PX}px)`,
+            perspectiveOrigin: `${centerPct}% calc(${HORIZON_PCT}% + ${PERSPECTIVE_OFFSET_PX}px)`,
             pointerEvents: 'none',
             visibility: ready ? 'visible' : 'hidden',
           }}
@@ -403,10 +406,9 @@ export default function Path({ nodes }: PathProps) {
               position: 'absolute',
               top: '-10000%',
               bottom: 0,
-              left: 0,
-              right: 0,
-              maxWidth: MAX_WIDTH,
-              margin: '0 auto',
+              left: `${centerPct}%`,
+              marginLeft: -MAX_WIDTH / 2,
+              width: MAX_WIDTH,
               transformOrigin: 'bottom center',
               transformStyle: 'preserve-3d',
               transform: `rotateX(${GROUND_ANGLE}deg)`,
@@ -466,7 +468,7 @@ export default function Path({ nodes }: PathProps) {
             position: 'absolute',
             inset: 0,
             perspective: `${PERSPECTIVE}px`,
-            perspectiveOrigin: `50% calc(${HORIZON_PCT}% + ${PERSPECTIVE_OFFSET_PX}px)`,
+            perspectiveOrigin: `${centerPct}% calc(${HORIZON_PCT}% + ${PERSPECTIVE_OFFSET_PX}px)`,
             pointerEvents: 'none',
             visibility: ready ? 'visible' : 'hidden',
           }}
@@ -476,10 +478,9 @@ export default function Path({ nodes }: PathProps) {
               position: 'absolute',
               top: '-10000%',
               bottom: 0,
-              left: 0,
-              right: 0,
-              maxWidth: MAX_WIDTH,
-              margin: '0 auto',
+              left: `${centerPct}%`,
+              marginLeft: -MAX_WIDTH / 2,
+              width: MAX_WIDTH,
               transformOrigin: 'bottom center',
               transformStyle: 'preserve-3d',
               transform: `rotateX(${GROUND_ANGLE}deg)`,
