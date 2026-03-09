@@ -6,13 +6,17 @@ class LapseAuthController < ApplicationController
 
   def start
     state = SecureRandom.hex(24)
+    code_verifier = SecureRandom.hex(32)
+    code_challenge = Base64.urlsafe_encode64(Digest::SHA256.digest(code_verifier), padding: false)
+
     session[:lapse_state] = state
+    session[:lapse_code_verifier] = code_verifier
     if params[:return_to].present?
       session[:lapse_return_to] = params[:return_to]
       session[:lapse_return_project_id] = params[:project_id] if params[:project_id].present?
     end
 
-    redirect_to LapseService.authorize_url(lapse_callback_url, state), allow_other_host: true
+    redirect_to LapseService.authorize_url(lapse_callback_url, state, code_challenge: code_challenge), allow_other_host: true
   end
 
   def callback
@@ -26,8 +30,9 @@ class LapseAuthController < ApplicationController
     end
 
     session[:lapse_state] = nil
+    code_verifier = session.delete(:lapse_code_verifier)
 
-    token_data = LapseService.exchange_code_for_token(params[:code], lapse_callback_url)
+    token_data = LapseService.exchange_code_for_token(params[:code], lapse_callback_url, code_verifier: code_verifier)
     unless token_data&.dig("access_token")
       redirect_to root_path, alert: "Failed to connect Lapse account"
       return

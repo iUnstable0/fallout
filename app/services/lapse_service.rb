@@ -8,28 +8,32 @@ module LapseService
   module_function
 
   def host
-    "https://lapse.hackclub.com"
+    "https://api.lapse.hackclub.com"
   end
 
-  def authorize_url(redirect_uri, state)
+  def authorize_url(redirect_uri, state, code_challenge:)
     params = {
       client_id: ENV.fetch("LAPSE_CLIENT_ID", nil),
       redirect_uri: redirect_uri,
       response_type: "code",
-      state: state
+      scope: "user:read",
+      state: state,
+      code_challenge: code_challenge,
+      code_challenge_method: "S256"
     }
-    "#{host}/oauth/authorize?#{params.to_query}"
+    "#{host}/api/auth/authorize?#{params.to_query}"
   end
 
-  def exchange_code_for_token(code, redirect_uri)
-    response = connection.post("/api/oauth/token") do |req|
+  def exchange_code_for_token(code, redirect_uri, code_verifier:)
+    response = connection.post("/api/auth/token") do |req|
       req.headers["Content-Type"] = "application/x-www-form-urlencoded"
       req.body = {
         grant_type: "authorization_code",
         code: code,
         redirect_uri: redirect_uri,
         client_id: ENV.fetch("LAPSE_CLIENT_ID", nil),
-        client_secret: ENV.fetch("LAPSE_CLIENT_SECRET", nil)
+        client_secret: ENV.fetch("LAPSE_CLIENT_SECRET", nil),
+        code_verifier: code_verifier
       }.to_query
     end
 
@@ -51,7 +55,7 @@ module LapseService
   def hackatime_projects(access_token)
     raise ArgumentError, "access_token is required" if access_token.blank?
 
-    response = connection.get("/api/rest/user/hackatimeProjects") do |req|
+    response = connection.get("/api/user/hackatimeProjects") do |req|
       req.headers["Authorization"] = "Bearer #{access_token}"
       req.headers["Accept"] = "application/json"
     end
@@ -78,7 +82,7 @@ module LapseService
     raise ArgumentError, "access_token is required" if access_token.blank?
     raise ArgumentError, "project_key is required" if project_key.blank?
 
-    response = connection.get("/api/rest/hackatime/myTimelapsesForProject") do |req|
+    response = connection.get("/api/hackatime/myTimelapsesForProject") do |req|
       req.headers["Authorization"] = "Bearer #{access_token}"
       req.headers["Accept"] = "application/json"
       req.params["projectKey"] = project_key
@@ -105,7 +109,7 @@ module LapseService
   def fetch_timelapse(access_token, timelapse_id)
     raise ArgumentError, "timelapse_id is required" if timelapse_id.blank?
 
-    response = connection.get("/api/rest/timelapse/query") do |req|
+    response = connection.get("/api/timelapse/query") do |req|
       req.headers["Authorization"] = "Bearer #{access_token}" if access_token.present?
       req.headers["Accept"] = "application/json"
       req.params["id"] = timelapse_id
