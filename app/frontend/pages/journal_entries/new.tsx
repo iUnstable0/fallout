@@ -19,6 +19,16 @@ type Timelapse = {
   createdAt: number
 }
 
+type YouTubeVideo = {
+  id: number
+  video_id: string
+  title: string
+  thumbnail_url: string
+  duration_seconds: number
+  was_live: boolean
+  claimed: boolean
+}
+
 function countMarkdownChars(md: string): number {
   let text = md
   // Remove images ![...](...)
@@ -88,6 +98,10 @@ function NewJournal({
 
   const [selectedProject, setSelectedProject] = useState<Project | null>(initialProject)
   const [selectedTimelapses, setSelectedTimelapses] = useState<Set<string>>(new Set())
+  const [youtubeVideos, setYoutubeVideos] = useState<YouTubeVideo[]>([])
+  const [youtubeUrl, setYoutubeUrl] = useState('')
+  const [youtubeLoading, setYoutubeLoading] = useState(false)
+  const [youtubeError, setYoutubeError] = useState<string | null>(null)
   const [blobSignedIds, setBlobSignedIds] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [draftStatus, setDraftStatus] = useState<string | null>(null)
@@ -139,7 +153,8 @@ function NewJournal({
   const markdownImageCount = (markdown.match(/!\[[^\]]*\]\([^)]*\)/g) || []).length
   const hasEnoughImages = markdownImageCount >= MIN_IMAGES
   const hasEnoughChars = charCount >= MIN_CHARS
-  const canSubmit = selectedProject && selectedTimelapses.size > 0 && hasEnoughImages && hasEnoughChars
+  const hasRecording = selectedTimelapses.size > 0 || youtubeVideos.length > 0
+  const canSubmit = selectedProject && hasRecording && hasEnoughImages && hasEnoughChars
 
   function toggleTimelapse(id: string) {
     setSelectedTimelapses((prev) => {
@@ -150,6 +165,53 @@ function NewJournal({
     })
   }
 
+  async function handleYoutubeLookup() {
+    if (!youtubeUrl.trim() || youtubeLoading) return
+    setYoutubeLoading(true)
+    setYoutubeError(null)
+
+    try {
+      const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content
+      const res = await fetch('/you_tube_videos/lookup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+          ...(csrfToken ? { 'X-CSRF-Token': csrfToken } : {}),
+        },
+        body: JSON.stringify({ url: youtubeUrl.trim() }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setYoutubeError(data.error || 'Failed to look up video')
+        return
+      }
+
+      if (data.claimed) {
+        setYoutubeError('This video is already used in another journal.')
+        return
+      }
+
+      if (youtubeVideos.some((v) => v.id === data.id)) {
+        setYoutubeError('This video has already been added.')
+        return
+      }
+
+      setYoutubeVideos((prev) => [...prev, data])
+      setYoutubeUrl('')
+    } catch {
+      setYoutubeError('Network error. Please try again.')
+    } finally {
+      setYoutubeLoading(false)
+    }
+  }
+
+  function removeYoutubeVideo(id: number) {
+    setYoutubeVideos((prev) => prev.filter((v) => v.id !== id))
+  }
+
   function handleSubmit() {
     if (!canSubmit) return
     setSubmitting(true)
@@ -157,6 +219,7 @@ function NewJournal({
       `/projects/${selectedProject.id}/journal_entries`,
       {
         timelapse_ids: Array.from(selectedTimelapses),
+        youtube_video_ids: youtubeVideos.map((v) => v.id),
         content: markdown,
         images: blobSignedIds,
       },
@@ -172,10 +235,18 @@ function NewJournal({
     )
   }
 
+  function submitButtonText() {
+    if (submitting) return 'Creating...'
+    const parts: string[] = []
+    if (selectedTimelapses.size > 0)
+      parts.push(`${selectedTimelapses.size} timelapse${selectedTimelapses.size !== 1 ? 's' : ''}`)
+    if (youtubeVideos.length > 0) parts.push(`${youtubeVideos.length} video${youtubeVideos.length !== 1 ? 's' : ''}`)
+    return `Create Journal (${parts.join(', ')})`
+  }
+
   const content = (
     <div className="w-full h-full mx-auto p-8 overflow-y-auto">
-      <h1 className="font-bold text-3xl mb-1">New Journal</h1>
-      <p className="text-dark-brown/60 mb-4">Remember to publish the timelapse</p>
+      <h1 className="font-bold text-3xl mb-4">New Journal</h1>
       <p className="text-lg">
         Journaling for:{' '}
         {projects.length > 1 ? (
@@ -197,32 +268,130 @@ function NewJournal({
           <span className="font-bold">{selectedProject?.name}</span>
         )}
       </p>
-      {!lapse_connected && (
-        <div
-          className={`mt-6 p-4 border border-amber-300 bg-amber-50 rounded-lg relative ${!selectedProject ? 'pointer-events-none' : ''}`}
-        >
-          {!selectedProject && <DisabledOverlay />}
-          <p className="text-lg font-bold mb-2">Connect Lapse</p>
-          <p className="mb-3">You need to connect Lapse to record timelapses for your journal.</p>
-          {selectedProject && (
-            <a
-              href={`/auth/lapse/start?return_to=journal&project_id=${selectedProject.id}`}
-              className="inline-block py-1.5 px-4 border-2 font-bold uppercase bg-brown text-light-brown border-dark-brown cursor-pointer"
-            >
-              Connect Lapse
-            </a>
-          )}
+
+      <div className="mt-6">
+        <h2 className="font-bold text-xl mb-4">How did you track your time</h2>
+
+        <div className="space-y-6">
+          <div>
+            <div className="flex items-start justify-between mb-1">
+              <h3 className="font-bold text-lg">Lapse</h3>
+              {lapse_connected && (
+                <a
+                  href="https://lapse.hackclub.com/timelapse/create"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="py-1.5 px-4 border-2 font-bold uppercase bg-brown text-light-brown border-dark-brown cursor-pointer text-sm"
+                >
+                  Start a timelapse
+                </a>
+              )}
+            </div>
+            <p className="text-dark-brown/60 text-sm mb-3">
+              Remember to publish the timelapse. Unlisted ones are accepted too!
+            </p>
+            {!lapse_connected && (
+              <div
+                className={`p-4 border border-amber-300 bg-amber-50 rounded-lg relative ${!selectedProject ? 'pointer-events-none' : ''}`}
+              >
+                {!selectedProject && <DisabledOverlay />}
+                <p className="font-bold mb-2">Connect Lapse</p>
+                <p className="mb-3 text-sm">You need to connect Lapse to record timelapses for your journal.</p>
+                {selectedProject && (
+                  <a
+                    href={`/auth/lapse/start?return_to=journal&project_id=${selectedProject.id}`}
+                    className="inline-block py-1.5 px-4 border-2 font-bold uppercase bg-brown text-light-brown border-dark-brown cursor-pointer text-sm"
+                  >
+                    Connect Lapse
+                  </a>
+                )}
+              </div>
+            )}
+            {lapse_connected && (
+              <Deferred data="timelapses" fallback={<TimelapseSkeleton />}>
+                <TimelapseBrowser
+                  timelapses={timelapses ?? []}
+                  selectedTimelapses={selectedTimelapses}
+                  onToggle={toggleTimelapse}
+                />
+              </Deferred>
+            )}
+          </div>
+
+          <div>
+            <h3 className="font-bold text-lg mb-1">YouTube video of screen recording or live stream</h3>
+            <p className="text-dark-brown/60 text-sm mb-3">
+              Screen recordings need to be real time and show the system clock. Live streams need to have DVR enabled.
+            </p>
+            <div className={`relative ${!selectedProject ? 'pointer-events-none' : ''}`}>
+              {!selectedProject && <DisabledOverlay />}
+              <div className="flex gap-2">
+                <input
+                  type="url"
+                  value={youtubeUrl}
+                  onChange={(e) => {
+                    setYoutubeUrl(e.target.value)
+                    setYoutubeError(null)
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      handleYoutubeLookup()
+                    }
+                  }}
+                  placeholder="Paste a YouTube video URL..."
+                  className="flex-1 px-3 py-2 border-2 border-dark-brown rounded bg-transparent outline-none text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={handleYoutubeLookup}
+                  disabled={youtubeLoading || !youtubeUrl.trim()}
+                  className="py-2 px-4 border-2 font-bold uppercase bg-brown text-light-brown border-dark-brown cursor-pointer text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {youtubeLoading ? 'Loading...' : 'Add'}
+                </button>
+              </div>
+              {youtubeError && <p className="text-red-500 text-sm mt-1">{youtubeError}</p>}
+            </div>
+
+            {youtubeVideos.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5 mt-3">
+                {youtubeVideos.map((video) => (
+                  <div
+                    key={video.id}
+                    className="group relative aspect-video rounded overflow-hidden border-2 border-dark-brown"
+                  >
+                    <img src={video.thumbnail_url} alt={video.title} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeYoutubeVideo(video.id)}
+                      className="absolute top-2 right-2 w-6 h-6 bg-dark-brown rounded-full flex items-center justify-center cursor-pointer hover:bg-red-600 transition-colors"
+                    >
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/70 to-transparent p-2 pt-6">
+                      <p className="text-white text-sm font-medium truncate text-left">{video.title}</p>
+                      <p className="text-white/70 text-xs text-left">
+                        {video.duration_seconds ? formatDuration(video.duration_seconds) : ''}
+                        {video.was_live ? ' \u2022 Live stream' : ''}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
-      {lapse_connected && (
-        <Deferred data="timelapses" fallback={<TimelapseSkeleton />}>
-          <TimelapseBrowser
-            timelapses={timelapses ?? []}
-            selectedTimelapses={selectedTimelapses}
-            onToggle={toggleTimelapse}
-          />
-        </Deferred>
-      )}
+      </div>
+
       <div className="mt-6">
         <h2 className="font-bold text-xl mb-3">Write about what you did</h2>
         <div className={`relative ${!selectedProject ? 'pointer-events-none' : ''}`}>
@@ -249,12 +418,10 @@ function NewJournal({
           </div>
         )}
       </div>
-      {selectedTimelapses.size > 0 && (
+      {hasRecording && (
         <div className="mt-6">
           <Button onClick={handleSubmit} disabled={submitting || !canSubmit}>
-            {submitting
-              ? 'Creating...'
-              : `Create Journal (${selectedTimelapses.size} timelapse${selectedTimelapses.size !== 1 ? 's' : ''})`}
+            {submitButtonText()}
           </Button>
         </div>
       )}
@@ -282,16 +449,10 @@ function DisabledOverlay() {
 
 function TimelapseSkeleton() {
   return (
-    <div className="mt-6 space-y-6">
-      <div className="h-7 w-48 bg-gray-200 rounded animate-pulse" />
-      <div>
-        <div className="h-6 w-32 bg-gray-200 rounded animate-pulse mb-3" />
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="aspect-video rounded-lg bg-gray-200 animate-pulse" />
-          ))}
-        </div>
-      </div>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+      {Array.from({ length: 6 }, (_, i) => (
+        <div key={i} className="aspect-video rounded-lg bg-gray-200 animate-pulse" />
+      ))}
     </div>
   )
 }
@@ -300,6 +461,11 @@ function formatDuration(seconds: number): string {
   if (seconds < 60) return `${Math.round(seconds)}s`
   const mins = Math.floor(seconds / 60)
   const secs = Math.round(seconds % 60)
+  if (mins >= 60) {
+    const hrs = Math.floor(mins / 60)
+    const remainMins = mins % 60
+    return remainMins > 0 ? `${hrs}h ${remainMins}m` : `${hrs}h`
+  }
   return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`
 }
 
@@ -314,36 +480,14 @@ function TimelapseBrowser({
 }) {
   if (timelapses.length === 0) {
     return (
-      <div className="mt-6 space-y-4">
-        <h2 className="font-bold text-xl">Select timelapses for your journal</h2>
-        <div className="p-6 flex flex-col items-center gap-3">
-          <p className="text-dark-brown">No timelapses found</p>
-          <a
-            href="https://lapse.hackclub.com/timelapse/create"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="py-1.5 px-4 border-2 font-bold uppercase bg-brown text-light-brown border-dark-brown cursor-pointer text-sm"
-          >
-            Start a timelapse
-          </a>
-        </div>
+      <div className="p-6 flex flex-col items-center gap-3">
+        <p className="text-dark-brown">No timelapses found</p>
       </div>
     )
   }
 
   return (
-    <div className="mt-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="font-bold text-xl">Select timelapses for your journal</h2>
-        <a
-          href="https://lapse.hackclub.com/timelapse/create"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="py-1.5 px-4 border-2 font-bold uppercase bg-brown text-light-brown border-dark-brown cursor-pointer text-sm"
-        >
-          Start a timelapse
-        </a>
-      </div>
+    <div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
         {timelapses.map((timelapse) => {
           const selected = selectedTimelapses.has(timelapse.id)

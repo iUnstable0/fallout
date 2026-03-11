@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_11_013354) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_11_170508) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -103,7 +103,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_013354) do
     t.text "description"
     t.float "duration"
     t.boolean "is_published"
-    t.bigint "journal_entry_id"
     t.datetime "lapse_created_at"
     t.string "lapse_timelapse_id", null: false
     t.datetime "last_refreshed_at"
@@ -116,7 +115,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_013354) do
     t.bigint "user_id", null: false
     t.string "video_container_kind"
     t.string "visibility"
-    t.index ["journal_entry_id"], name: "index_lapse_timelapses_on_journal_entry_id"
     t.index ["lapse_timelapse_id"], name: "index_lapse_timelapses_on_lapse_timelapse_id", unique: true
     t.index ["user_id"], name: "index_lapse_timelapses_on_user_id"
   end
@@ -179,6 +177,18 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_013354) do
     t.index ["is_unlisted"], name: "index_projects_on_is_unlisted"
     t.index ["tags"], name: "index_projects_on_tags", using: :gin
     t.index ["user_id"], name: "index_projects_on_user_id"
+  end
+
+  create_table "recordings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "journal_entry_id", null: false
+    t.bigint "recordable_id", null: false
+    t.string "recordable_type", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["journal_entry_id"], name: "index_recordings_on_journal_entry_id"
+    t.index ["recordable_type", "recordable_id"], name: "index_recordings_on_recordable_type_and_recordable_id", unique: true
+    t.index ["user_id"], name: "index_recordings_on_user_id"
   end
 
   create_table "ships", force: :cascade do |t|
@@ -364,17 +374,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_013354) do
     t.string "definition"
     t.text "description"
     t.integer "duration_seconds"
-    t.bigint "journal_entry_id"
+    t.datetime "last_refreshed_at"
     t.string "live_broadcast_content"
     t.datetime "published_at"
     t.text "tags"
     t.string "thumbnail_url"
     t.string "title"
     t.datetime "updated_at", null: false
-    t.bigint "user_id"
     t.string "video_id", null: false
-    t.index ["journal_entry_id"], name: "index_you_tube_videos_on_journal_entry_id"
-    t.index ["user_id"], name: "index_you_tube_videos_on_user_id"
+    t.boolean "was_live", default: false
     t.index ["video_id"], name: "index_you_tube_videos_on_video_id", unique: true
   end
 
@@ -382,7 +390,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_013354) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "journal_entries", "projects"
   add_foreign_key "journal_entries", "users"
-  add_foreign_key "lapse_timelapses", "journal_entries"
   add_foreign_key "lapse_timelapses", "users"
   add_foreign_key "mail_interactions", "mail_messages"
   add_foreign_key "mail_interactions", "users"
@@ -390,6 +397,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_013354) do
   add_foreign_key "mail_messages", "users", column: "author_id"
   add_foreign_key "onboarding_responses", "users"
   add_foreign_key "projects", "users"
+  add_foreign_key "recordings", "journal_entries"
+  add_foreign_key "recordings", "users"
   add_foreign_key "ships", "projects"
   add_foreign_key "ships", "users", column: "reviewer_id"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -398,6 +407,4 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_11_013354) do
   add_foreign_key "solid_queue_ready_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
-  add_foreign_key "you_tube_videos", "journal_entries"
-  add_foreign_key "you_tube_videos", "users"
 end

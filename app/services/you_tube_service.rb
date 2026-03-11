@@ -5,6 +5,7 @@ module YouTubeService
   class Error < StandardError; end
 
   VIDEO_ID_REGEX = %r{(?:youtube\.com/(?:watch\?.*v=|embed/|live/)|youtu\.be/)([a-zA-Z0-9_-]{11})}
+  SHORTS_REGEX = %r{youtube\.com/shorts/}
   THUMBNAIL_QUALITIES = %w[default mqdefault hqdefault sddefault maxresdefault].freeze
 
   module_function
@@ -30,6 +31,7 @@ module YouTubeService
 
   def extract_video_id(url)
     return nil if url.blank?
+    return nil if url.to_s.match?(SHORTS_REGEX)
     url.to_s.match(VIDEO_ID_REGEX)&.[](1)
   end
 
@@ -37,7 +39,7 @@ module YouTubeService
     attrs = fetch_video_data(video_id)
     return nil if attrs.nil?
 
-    YouTubeVideo.create!(attrs)
+    YouTubeVideo.create!(attrs.merge(last_refreshed_at: Time.current))
   rescue ActiveRecord::RecordNotUnique
     YouTubeVideo.find_by(video_id: video_id)
   end
@@ -64,17 +66,24 @@ module YouTubeService
     snippet = item["snippet"]
     content = item["contentDetails"]
 
+    duration = parse_iso8601_duration(content["duration"])
+    is_live = snippet["liveBroadcastContent"] != "none"
+
+    # Reject Shorts — very short videos that aren't live streams
+    return nil if duration.present? && duration <= 60 && !is_live
+
     {
       video_id: video_id,
       title: snippet["title"],
       description: snippet["description"],
       channel_id: snippet["channelId"],
       channel_title: snippet["channelTitle"],
-      thumbnail_url: thumbnail_url_from_id(video_id),
-      duration_seconds: parse_iso8601_duration(content["duration"]),
+      thumbnail_url: thumbnail_url_from_id(video_id, quality: "maxresdefault"),
+      duration_seconds: duration,
       published_at: snippet["publishedAt"],
       definition: content["definition"],
       caption: content["caption"] == "true",
+      was_live: snippet["liveBroadcastContent"] == "live",
       live_broadcast_content: snippet["liveBroadcastContent"],
       tags: snippet["tags"],
       category_id: snippet["categoryId"]

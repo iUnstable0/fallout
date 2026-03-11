@@ -23,8 +23,11 @@ class JournalEntriesController < ApplicationController
       direct_upload_url: rails_direct_uploads_url,
       timelapses: InertiaRails.defer {
         if lapse_connected
-          # Exclude timelapses already claimed by any journal (including journals on soft-deleted projects)
-          claimed_ids = current_user.lapse_timelapses.where.not(journal_entry_id: nil).pluck(:lapse_timelapse_id).to_set
+          # Exclude timelapses already claimed by any journal via recordings
+          claimed_ids = Recording.where(recordable_type: "LapseTimelapse")
+            .joins("JOIN lapse_timelapses ON lapse_timelapses.id = recordings.recordable_id")
+            .where(lapse_timelapses: { user_id: current_user.id })
+            .pluck("lapse_timelapses.lapse_timelapse_id").to_set
           current_user.get_timelapses.reject { |t| claimed_ids.include?(t["id"]) }.map { |t| safe_timelapse_attrs(t) }
         else
           []
@@ -45,6 +48,7 @@ class JournalEntriesController < ApplicationController
     authorize @journal_entry
 
     timelapse_ids = Array(params[:timelapse_ids]).map(&:to_s).uniq
+    youtube_video_ids = Array(params[:youtube_video_ids]).map(&:to_i).uniq
 
     ActiveRecord::Base.transaction do
       @journal_entry.save!
@@ -52,11 +56,14 @@ class JournalEntriesController < ApplicationController
       Array(params[:images]).each { |signed_id| @journal_entry.images.attach(signed_id) }
 
       timelapse_ids.each do |tid|
-        timelapse = current_user.lapse_timelapses.create!(
-          journal_entry: @journal_entry,
-          lapse_timelapse_id: tid
-        )
-        timelapse.update_data! # Fetches from Lapse API to verify and populate cached fields
+        timelapse = current_user.lapse_timelapses.create!(lapse_timelapse_id: tid)
+        timelapse.refetch_data! # Fetches from Lapse API to verify and populate cached fields
+        @journal_entry.recordings.create!(recordable: timelapse, user: current_user)
+      end
+
+      youtube_video_ids.each do |vid|
+        video = YouTubeVideo.find(vid)
+        @journal_entry.recordings.create!(recordable: video, user: current_user)
       end
     end
 

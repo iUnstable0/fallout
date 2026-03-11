@@ -20,9 +20,20 @@ export default function BgmPlayer() {
   wantBgmRef.current = wantBgm
 
   useEffect(() => {
-    const audio = new Audio(BGM_SRC)
+    const audio = new Audio()
+    audio.preload = 'auto'
     audio.loop = true
     audioRef.current = audio
+
+    // Defer the download until the browser is idle / page has loaded
+    const loadSrc = () => { audio.src = BGM_SRC }
+    const idleId = 'requestIdleCallback' in window
+      ? window.requestIdleCallback(loadSrc)
+      : undefined
+    const fallbackTimer = idleId === undefined
+      ? window.setTimeout(loadSrc, 0)
+      : undefined
+    window.addEventListener('load', loadSrc, { once: true })
 
     function removeListeners() {
       for (const event of ACTIVATION_EVENTS) {
@@ -32,6 +43,7 @@ export default function BgmPlayer() {
 
     function tryPlay() {
       if (!wantBgmRef.current || !audio.paused) return
+      if (!audio.src) audio.src = BGM_SRC
       audio
         .play()
         .then(() => {
@@ -49,6 +61,9 @@ export default function BgmPlayer() {
 
     return () => {
       removeListeners()
+      window.removeEventListener('load', loadSrc)
+      if (idleId !== undefined) window.cancelIdleCallback(idleId)
+      if (fallbackTimer !== undefined) window.clearTimeout(fallbackTimer)
       audio.pause()
       audio.src = ''
       audioRef.current = null
@@ -65,6 +80,7 @@ export default function BgmPlayer() {
       setWantBgm(false)
       localStorage.setItem(STORAGE_KEY, 'false')
     } else {
+      if (!audio.src) audio.src = BGM_SRC
       audio
         .play()
         .then(() => {

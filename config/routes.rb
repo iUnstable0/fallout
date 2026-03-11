@@ -154,6 +154,7 @@ Rails.application.routes.draw do
   # Top-level journal entry point — redirects to project-scoped route or shows project selection
   get "journal_entries/new" => "journal_entries#new", as: :new_journal_entry
   post "journal_entries/preview" => "journal_entries#preview", as: :preview_journal_entry
+  post "you_tube_videos/lookup" => "you_tube_videos#lookup", as: :lookup_you_tube_video
 
   get "docs" => "markdown#show", as: :docs
   get "docs/*slug" => "markdown#show", as: :doc

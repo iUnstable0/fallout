@@ -28,8 +28,9 @@ class JournalEntry < ApplicationRecord
 
   belongs_to :user
   belongs_to :project
-  has_many :lapse_timelapses, dependent: :nullify
-  has_many :you_tube_videos, dependent: :nullify
+  has_many :recordings, dependent: :destroy
+  has_many :lapse_timelapses, through: :recordings, source: :recordable, source_type: "LapseTimelapse"
+  has_many :you_tube_videos, through: :recordings, source: :recordable, source_type: "YouTubeVideo"
   has_many_attached :images
 
   validate :user_must_own_project
@@ -63,5 +64,19 @@ class JournalEntry < ApplicationRecord
 
   def validate_image_count
     errors.add(:images, "cannot exceed 20") if images.size > 20
+  end
+
+  def unclaim_recordings
+    recordings.destroy_all
+  end
+
+  public
+
+  # Override Discardable#discard to also unclaim recordings so timelapses/videos can be reused
+  def discard
+    transaction do
+      unclaim_recordings
+      super
+    end
   end
 end

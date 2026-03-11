@@ -16,28 +16,24 @@
 #  visibility           :string
 #  created_at           :datetime         not null
 #  updated_at           :datetime         not null
-#  journal_entry_id     :bigint
 #  lapse_timelapse_id   :string           not null
 #  owner_lapse_id       :string
 #  user_id              :bigint           not null
 #
 # Indexes
 #
-#  index_lapse_timelapses_on_journal_entry_id    (journal_entry_id)
 #  index_lapse_timelapses_on_lapse_timelapse_id  (lapse_timelapse_id) UNIQUE
 #  index_lapse_timelapses_on_user_id             (user_id)
 #
 # Foreign Keys
 #
-#  fk_rails_...  (journal_entry_id => journal_entries.id)
 #  fk_rails_...  (user_id => users.id)
 #
 class LapseTimelapse < ApplicationRecord
   belongs_to :user
-  belongs_to :journal_entry, optional: true
+  has_one :recording, as: :recordable, dependent: :destroy # Destroying a timelapse removes its journal link
 
   validates :lapse_timelapse_id, presence: true, uniqueness: true
-  validate :user_must_match_journal_user
 
   def fetch_data
     token = user.lapse_token
@@ -46,7 +42,7 @@ class LapseTimelapse < ApplicationRecord
     LapseService.fetch_timelapse(token, lapse_timelapse_id)
   end
 
-  def update_data!
+  def refetch_data!
     data = fetch_data
     raise ActiveRecord::RecordNotFound, "Timelapse #{lapse_timelapse_id} not found on Lapse" unless data
 
@@ -64,11 +60,5 @@ class LapseTimelapse < ApplicationRecord
       owner_handle: data.dig("owner", "handle"),
       last_refreshed_at: Time.current
     )
-  end
-
-  private
-
-  def user_must_match_journal_user
-    errors.add(:journal_entry, "must belong to the same user") if journal_entry && journal_entry.user_id != user_id
   end
 end
