@@ -37,6 +37,8 @@ class AuthController < ApplicationController
           current_user.projects.update_all(user_id: user.id)
           existing_keys = user.onboarding_responses.pluck(:question_key)
           current_user.onboarding_responses.where.not(question_key: existing_keys).update_all(user_id: user.id)
+          # Transfer trial user's Ahoy visits so attribution (e.g. first_ref) carries over to the full account
+          current_user.ahoy_visits.update_all(user_id: user.id)
           user.update!(onboarded: true) if current_user.onboarded? && !user.onboarded?
         end
         cookies.delete(:trial_device_token)

@@ -49,6 +49,9 @@ class ApplicationController < ActionController::Base
 
   def track_ahoy_visit
     if user_signed_in? && ahoy.visit && ahoy.visit.user_id != current_user.id
+      # Backfill all prior visits from this visitor so pre-login visits (e.g. with utm_source) are linked to the user
+      Ahoy::Visit.where(visitor_token: ahoy.visit.visitor_token, user_id: nil)
+                 .update_all(user_id: current_user.id)
       ahoy.visit.update(user_id: current_user.id)
     end
 
