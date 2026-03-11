@@ -47,21 +47,6 @@ class ApplicationController < ActionController::Base
 
   private
 
-  def track_ahoy_visit
-    # Always create a visit so Ahoy sets the visitor cookie, even for unauthenticated users
-    ahoy.visit
-
-    return unless user_signed_in? && ahoy.visit
-
-    if ahoy.visit.user_id != current_user.id
-      # Backfill all prior visits from this visitor so pre-login visits (e.g. with utm_source) are linked to the user
-      Ahoy::Visit.where(visitor_token: ahoy.visit.visitor_token, user_id: nil)
-                 .update_all(user_id: current_user.id)
-    end
-
-    ahoy.authenticate(current_user)
-  end
-
   def track_page_view
     return if response.redirect?
 
@@ -75,6 +60,10 @@ class ApplicationController < ActionController::Base
     props.merge!(utm_params) if utm_params.present?
 
     ahoy.track "$view", props
+
+    if user_signed_in? && ahoy.visit && ahoy.visit.user_id != current_user.id
+      ahoy.visit.update(user_id: current_user.id)
+    end
   end
 
   def user_not_authorized
