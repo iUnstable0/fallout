@@ -5,7 +5,6 @@ class ApplicationController < ActionController::Base
   include Pagy::Method
   include InertiaPagination
 
-  before_action :track_ahoy_visit
   after_action :track_page_view
 
   after_action :verify_authorized, except: :index
@@ -49,9 +48,12 @@ class ApplicationController < ActionController::Base
   private
 
   def track_ahoy_visit
+    # Always create a visit so Ahoy sets the visitor cookie, even for unauthenticated users
+    ahoy.visit
+
     return unless user_signed_in?
 
-    if ahoy.visit && ahoy.visit.user_id != current_user.id
+    if ahoy.visit.user_id != current_user.id
       # Backfill all prior visits from this visitor so pre-login visits (e.g. with utm_source) are linked to the user
       Ahoy::Visit.where(visitor_token: ahoy.visit.visitor_token, user_id: nil)
                  .update_all(user_id: current_user.id)

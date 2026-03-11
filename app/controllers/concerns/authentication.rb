@@ -5,6 +5,7 @@ module Authentication
 
   included do
       before_action :set_current_user
+      before_action :track_ahoy_visit # Must run before auth redirects so pre-login visits get linked to the user
       before_action :authenticate_user!
       before_action :redirect_banned_user!
       before_action :redirect_discarded_trial_user!

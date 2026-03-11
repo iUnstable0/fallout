@@ -8,6 +8,7 @@ end
 
 Ahoy.api = false
 Ahoy.cookies = true
+Ahoy.cookie_domain = :all
 Ahoy.geocode = true
 Ahoy.job_queue = :background
 
