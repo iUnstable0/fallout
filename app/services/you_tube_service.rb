@@ -6,6 +6,7 @@ module YouTubeService
 
   VIDEO_ID_REGEX = %r{(?:youtube\.com/(?:watch\?.*v=|embed/|live/)|youtu\.be/)([a-zA-Z0-9_-]{11})}
   CACHE_TTL = 30.days
+  THUMBNAIL_QUALITIES = %w[default mqdefault hqdefault sddefault maxresdefault].freeze
 
   module_function
 
@@ -16,6 +17,14 @@ module YouTubeService
     Rails.cache.fetch("youtube_video/#{video_id}", expires_in: CACHE_TTL) do
       fetch_video_data(video_id)
     end
+  end
+
+  def thumbnail_url(url, quality: "default")
+    video_id = extract_video_id(url)
+    return nil if video_id.blank?
+
+    quality_key = THUMBNAIL_QUALITIES.include?(quality) ? quality : "default"
+    "https://i.ytimg.com/vi/#{video_id}/#{quality_key}.jpg"
   end
 
   def extract_video_id(url)
@@ -45,7 +54,7 @@ module YouTubeService
     {
       video_id: video_id,
       title: item.dig("snippet", "title"),
-      thumbnail_url: best_thumbnail(item.dig("snippet", "thumbnails")),
+      thumbnail_url: thumbnail_url_from_id(video_id),
       duration_seconds: parse_iso8601_duration(item.dig("contentDetails", "duration"))
     }
   rescue StandardError => e
@@ -53,12 +62,9 @@ module YouTubeService
     nil
   end
 
-  def best_thumbnail(thumbnails)
-    return nil if thumbnails.nil?
-    %w[maxres standard high medium default].each do |key|
-      return thumbnails.dig(key, "url") if thumbnails[key].present?
-    end
-    nil
+  def thumbnail_url_from_id(video_id, quality: "default")
+    quality_key = THUMBNAIL_QUALITIES.include?(quality) ? quality : "default"
+    "https://i.ytimg.com/vi/#{video_id}/#{quality_key}.jpg"
   end
 
   def parse_iso8601_duration(duration_string)
