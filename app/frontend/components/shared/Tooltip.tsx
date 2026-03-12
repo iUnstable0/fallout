@@ -16,6 +16,7 @@ type CtxValue = {
   gap: number
   trackScroll: boolean
   alwaysShow: boolean
+  snapWhenOffscreen: (() => { x: number; y: number }) | false
 }
 
 const Ctx = createContext<CtxValue | null>(null)
@@ -28,6 +29,15 @@ function useCtx() {
 
 const DEFAULT_GAP = 10
 
+let bobStyleInjected = false
+function ensureBobKeyframes() {
+  if (bobStyleInjected) return
+  bobStyleInjected = true
+  const style = document.createElement('style')
+  style.textContent = `@keyframes tooltip-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}`
+  document.head.appendChild(style)
+}
+
 export function Tooltip({
   children,
   side = 'right',
@@ -35,6 +45,7 @@ export function Tooltip({
   gap = DEFAULT_GAP,
   trackScroll = false,
   alwaysShow = false,
+  snapWhenOffscreen = false,
 }: {
   children: ReactNode
   side?: Side
@@ -42,12 +53,25 @@ export function Tooltip({
   gap?: number
   trackScroll?: boolean
   alwaysShow?: boolean
+  snapWhenOffscreen?: (() => { x: number; y: number }) | false
 }) {
   const [open, setOpen] = useState(false)
   const triggerRef = useRef<HTMLElement>(null)
   const effectiveOpen = alwaysShow || open
   return (
-    <Ctx.Provider value={{ open: effectiveOpen, setOpen, triggerRef, side, autoFlip, gap, trackScroll, alwaysShow }}>
+    <Ctx.Provider
+      value={{
+        open: effectiveOpen,
+        setOpen,
+        triggerRef,
+        side,
+        autoFlip,
+        gap,
+        trackScroll,
+        alwaysShow,
+        snapWhenOffscreen,
+      }}
+    >
       {children}
     </Ctx.Provider>
   )
@@ -221,10 +245,11 @@ function Arrow({ side }: { side: Side }) {
 }
 
 export function TooltipContent({ children, className }: { children: ReactNode; className?: string }) {
-  const { open, setOpen, triggerRef, side, autoFlip, gap, trackScroll } = useCtx()
+  const { open, setOpen, triggerRef, side, autoFlip, gap, trackScroll, snapWhenOffscreen } = useCtx()
   const ref = useRef<HTMLDivElement>(null)
   const [pos, setPos] = useState<Pos | null>(null)
   const posRef = useRef<Pos | null>(null)
+  const snappedRef = useRef(false)
 
   const applyPos = useCallback(
     (el: HTMLDivElement, tr: DOMRect) => {
@@ -233,6 +258,10 @@ export function TooltipContent({ children, className }: { children: ReactNode; c
       el.style.top = `${p.top}px`
       el.style.left = `${p.left}px`
       el.style.visibility = 'visible'
+      if (snappedRef.current) {
+        snappedRef.current = false
+        el.style.animation = ''
+      }
       // Update React state only when resolved side changes (for arrow direction)
       if (posRef.current?.side !== p.side) setPos(p)
       posRef.current = p
@@ -267,6 +296,26 @@ export function TooltipContent({ children, className }: { children: ReactNode; c
       const vh = window.innerHeight
       const vw = window.innerWidth
       if (tr.bottom < 0 || tr.top > vh || tr.right < 0 || tr.left > vw) {
+        if (snapWhenOffscreen) {
+          const snap = snapWhenOffscreen()
+          const el = ref.current
+          const ttW = el.offsetWidth
+          const ttH = el.offsetHeight
+          const snapLeft = Math.max(8, Math.min(vw - ttW - 8, snap.x - ttW / 2))
+          const snapTop = snap.y - ttH - gap
+          el.style.top = `${snapTop}px`
+          el.style.left = `${snapLeft}px`
+          el.style.visibility = 'visible'
+          if (!snappedRef.current) {
+            snappedRef.current = true
+            ensureBobKeyframes()
+            el.style.animation = 'tooltip-bob 1.2s ease-in-out infinite'
+          }
+          const snapSide: Side = 'top'
+          if (posRef.current?.side !== snapSide) setPos({ top: snapTop, left: snapLeft, side: snapSide })
+          posRef.current = { top: snapTop, left: snapLeft, side: snapSide }
+          return
+        }
         setOpen(false)
         return
       }
@@ -285,16 +334,20 @@ export function TooltipContent({ children, className }: { children: ReactNode; c
     // Initial reposition after paint (trigger may not be in final position during useLayoutEffect)
     const initialRaf = requestAnimationFrame(update)
 
+    // Catch-all interval corrects drift when rAF/scroll events are throttled (e.g. Safari)
+    const interval = setInterval(update, 100)
+
     window.addEventListener('scroll', onScroll, { capture: true, passive: true })
     window.addEventListener('scrollend', onScrollEnd, { capture: true, passive: true })
     window.addEventListener('resize', onScroll, { passive: true })
     return () => {
+      clearInterval(interval)
       cancelAnimationFrame(initialRaf)
       window.removeEventListener('scroll', onScroll, { capture: true })
       window.removeEventListener('scrollend', onScrollEnd, { capture: true })
       window.removeEventListener('resize', onScroll)
     }
-  }, [open, trackScroll, triggerRef, setOpen, applyPos])
+  }, [open, trackScroll, triggerRef, setOpen, applyPos, snapWhenOffscreen])
 
   if (!open) return null
 

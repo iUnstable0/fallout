@@ -3,7 +3,7 @@ import type { ReactNode } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import type { SharedProps } from '@/types'
 // @ts-expect-error useModalStack lacks type declarations in this beta package
-import { useModalStack } from '@inertiaui/modal-react'
+import { useModalStack, ModalLink } from '@inertiaui/modal-react'
 import Shop from '@/components/Shop'
 import Projects from '@/components/Projects'
 import Path from '@/components/path/Path'
@@ -106,9 +106,9 @@ export default function PathIndex() {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger>
-            <button onClick={() => notify('alert', 'This is coming soon. Check back later!')}>
+            <ModalLink href="/projects" className="outline-0">
               <img src="/icon/project.webp" alt="Projects" className="w-25 cursor-pointer" />
-            </button>
+            </ModalLink>
           </TooltipTrigger>
           <TooltipContent>Projects</TooltipContent>
         </Tooltip>

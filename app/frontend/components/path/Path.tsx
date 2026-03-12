@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import React, { createContext, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 
 const HORIZON_PCT = 0
 const PERSPECTIVE = 800
@@ -44,6 +44,8 @@ function findGroundD(targetScreenY: number, R: number, H: number, peakD: number)
   }
   return (lo + hi) / 2
 }
+
+export const PathCenterContext = createContext<number>(0)
 
 const LANE_PATTERN = [1, 2, 1, 0] // middle, right, middle, left
 
@@ -352,8 +354,10 @@ export default function Path({ nodes }: PathProps) {
     }
   }, [billboards, grass, planetRadius, inflectionGroundY, topGroundY, lastBillboardY, windowSize.w])
 
+  const centerX = (windowSize.w - RIGHT_MARGIN) / 2
+
   return (
-    <>
+    <PathCenterContext.Provider value={centerX}>
       <div style={{ height: `calc(100vh + ${maxScroll}px)` }} />
       <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
         {/* Sky */}
@@ -515,6 +519,6 @@ export default function Path({ nodes }: PathProps) {
           </div>
         </div>
       </div>
-    </>
+    </PathCenterContext.Provider>
   )
 }
