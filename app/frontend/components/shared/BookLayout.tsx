@@ -1,7 +1,15 @@
 import type { ReactNode } from 'react'
 import { twMerge } from 'tailwind-merge'
 
-const BookLayout = ({ children, className }: { children: ReactNode; className?: string }) => (
+const BookLayout = ({
+  children,
+  className,
+  showJoint = true,
+}: {
+  children: ReactNode
+  className?: string
+  showJoint?: boolean
+}) => (
   <div className="h-full p-12 flex">
     <div className={twMerge('relative flex-1 h-full my-auto', className)}>
       <div className="inset-0 bg-light-brown h-full w-full">{children}</div>
@@ -20,6 +28,9 @@ const BookLayout = ({ children, className }: { children: ReactNode; className?: 
         <div className="absolute left-0 bottom-0 right-0 h-5 bg-dark-brown"></div>
         <div className="absolute right-0 bottom-0 top-0 w-5 bg-dark-brown"></div>
       </div>
+      {showJoint && (
+        <div className="absolute pointer-events-none left-1/2 top-0 -translate-x-1/2 -bottom-15 w-px bg-dark-brown"></div>
+      )}
     </div>
   </div>
 )
