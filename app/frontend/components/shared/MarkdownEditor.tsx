@@ -678,9 +678,9 @@ export default function MarkdownEditor({
 
   return (
     <>
-      <div className="border-2 border-dark-brown rounded overflow-hidden bg-white">
-        {/* Header: Tabs + Toolbar */}
-        <div className="flex items-center justify-between border-b-2 border-dark-brown bg-light-brown/30 px-3 py-1.5">
+      <div className="border-2 border-dark-brown rounded overflow-hidden bg-white h-full flex flex-col">
+        {/* Tabs */}
+        <div className="flex items-center border-b border-dark-brown/20 bg-light-brown/30 px-3 py-1.5">
           <div className="flex items-center gap-1">
             <button
               type="button"
@@ -701,53 +701,54 @@ export default function MarkdownEditor({
               Preview
             </button>
           </div>
-
-          {tab === 'write' && (
-            <div className="flex items-center gap-0.5">
-              <ToolbarButton
-                onClick={() => apply((v, s, e) => wrapSelection(v, s, e, '**', '**'))}
-                title="Bold (Cmd+B)"
-              >
-                <BoldIcon />
-              </ToolbarButton>
-              <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '### ', false))} title="Heading">
-                <HeadingIcon />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => apply((v, s, e) => wrapSelection(v, s, e, '_', '_'))}
-                title="Italic (Cmd+I)"
-              >
-                <ItalicIcon />
-              </ToolbarButton>
-              <div className="w-px h-4 bg-dark-brown/20 mx-1" />
-              <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '> ', false))} title="Quote">
-                <QuoteIcon />
-              </ToolbarButton>
-              <ToolbarButton onClick={() => apply(insertCodeBlock)} title="Code block (Cmd+E)">
-                <CodeIcon />
-              </ToolbarButton>
-              <ToolbarButton onClick={() => apply(insertLink)} title="Link (Cmd+K)">
-                <LinkIcon />
-              </ToolbarButton>
-              <div className="w-px h-4 bg-dark-brown/20 mx-1" />
-              <ToolbarButton onClick={openFilePicker} title="Upload image">
-                <ImageIcon />
-              </ToolbarButton>
-              <ToolbarButton
-                onClick={() => apply((v, s, e) => prefixLines(v, s, e, '- ', false))}
-                title="Unordered list"
-              >
-                <UnorderedListIcon />
-              </ToolbarButton>
-              <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '', true))} title="Ordered list">
-                <OrderedListIcon />
-              </ToolbarButton>
-            </div>
-          )}
         </div>
 
+        {/* Toolbar */}
+        {tab === 'write' && (
+          <div className="flex items-center gap-0.5 border-b-2 border-dark-brown bg-light-brown/30 px-3 py-1">
+            <ToolbarButton
+              onClick={() => apply((v, s, e) => wrapSelection(v, s, e, '**', '**'))}
+              title="Bold (Cmd+B)"
+            >
+              <BoldIcon />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '### ', false))} title="Heading">
+              <HeadingIcon />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => apply((v, s, e) => wrapSelection(v, s, e, '_', '_'))}
+              title="Italic (Cmd+I)"
+            >
+              <ItalicIcon />
+            </ToolbarButton>
+            <div className="w-px h-4 bg-dark-brown/20 mx-1" />
+            <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '> ', false))} title="Quote">
+              <QuoteIcon />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => apply(insertCodeBlock)} title="Code block (Cmd+E)">
+              <CodeIcon />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => apply(insertLink)} title="Link (Cmd+K)">
+              <LinkIcon />
+            </ToolbarButton>
+            <div className="w-px h-4 bg-dark-brown/20 mx-1" />
+            <ToolbarButton onClick={openFilePicker} title="Upload image">
+              <ImageIcon />
+            </ToolbarButton>
+            <ToolbarButton
+              onClick={() => apply((v, s, e) => prefixLines(v, s, e, '- ', false))}
+              title="Unordered list"
+            >
+              <UnorderedListIcon />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '', true))} title="Ordered list">
+              <OrderedListIcon />
+            </ToolbarButton>
+          </div>
+        )}
+
         {/* Editor / Preview area */}
-        <div className="min-h-64">
+        <div className="flex-1 min-h-0 flex flex-col">
           {tab === 'write' ? (
             <textarea
               ref={textareaRef}
@@ -761,10 +762,10 @@ export default function MarkdownEditor({
                 placeholder ??
                 'Write a few sentences about what you did...\nHow you did it...\nWhat went well, etc...\n\nInclude some images of your work!\n\nTip: Markdown is supported and you can drag and drop images.'
               }
-              className="w-full min-h-64 p-4 resize-y bg-transparent text-dark-brown placeholder:text-dark-brown/30 focus:outline-none text-sm"
+              className="w-full flex-1 min-h-32 p-4 resize-none bg-transparent text-dark-brown placeholder:text-dark-brown/30 focus:outline-none text-sm"
             />
           ) : (
-            <div className="p-4 min-h-64 max-h-96 overflow-y-auto">
+            <div className="p-4 flex-1 min-h-0 overflow-y-auto">
               {previewLoading ? (
                 <p className="text-dark-brown/30 italic">Loading preview...</p>
               ) : value ? (

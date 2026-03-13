@@ -54,6 +54,10 @@ Use Rails, Inertia, React, and Pundit best practices. Keep code DRY with partial
 
 Maintain existing functionality; do not introduce bugs. Before finishing, run `git diff` to review changes, then run `bin/rubocop -f github`, `bin/brakeman --no-pager`, and `npm run format:check`. Flag unrelated issues but you don't have to fix them.
 
+## Styling
+
+Use only the project's existing color palette (Tailwind theme colors like `bg-brown`, `text-light-brown`, `border-dark-brown`, etc.). Do not use hex colors or arbitrary values (e.g. `bg-[#ae9578]`) unless explicitly told to. Do not use opacity/translucency (e.g. `bg-dark-brown/50`, `text-brown/30`) as a way to create color shades — if a shade is needed that doesn't exist in the palette, ask the developer for the correct color.
+
 ## Comments
 
 Do not add comments unless absolutely necessary for clarity — code should be self-describing. No large comment blocks. **Exception**: code with non-obvious effects beyond its immediate scope — especially security, access control, or authorization — **MUST** have an inline comment explaining why it exists. Examples: access directives, policy scoping, before_action filters, session/cookie manipulation, and any logic whose removal would silently change access. If someone reading the code in isolation couldn't tell why a line is there, comment it.

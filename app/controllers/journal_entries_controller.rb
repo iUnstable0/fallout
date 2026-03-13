@@ -1,5 +1,5 @@
 class JournalEntriesController < ApplicationController
-  allow_trial_access only: %i[new create preview] # Trial users can access journal creation and preview
+  allow_trial_access only: %i[preview] # Trial users have unverified emails — block journal creation to prevent abuse
   skip_after_action :verify_authorized # No index action — blanket skip required (Rails 8.1 callback validation)
   skip_after_action :verify_policy_scoped # No index action — blanket skip required (Rails 8.1 callback validation)
 

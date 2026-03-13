@@ -279,6 +279,8 @@ class User < ApplicationRecord
   private
 
   def get_timelapses_via_program_key
+    return [] if trial? # Trial users have unverified emails — don't look up Lapse by email
+
     lapse_user = LapseService.query_user_by_email(email)
     return [] unless lapse_user&.dig("id")
 
