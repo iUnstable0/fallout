@@ -70,6 +70,18 @@ export default function PathNode({
           <ModalLink href="/projects/onboarding" className="outline-0">
             {starImage}
           </ModalLink>
+        ) : state === 'completed' && interactive ? (
+          <button
+            onClick={() =>
+              notify(
+                'alert',
+                "You've finished this step! Want to create another project? Click the projects button in the left (Hint: Fish in a box)",
+              )
+            }
+            className="outline-0"
+          >
+            {starImage}
+          </button>
         ) : (
           starImage
         )

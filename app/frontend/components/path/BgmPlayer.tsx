@@ -13,7 +13,7 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export default function BgmPlayer() {
+export default function BgmPlayer({ hasProjects = false }: { hasProjects?: boolean }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -25,7 +25,8 @@ export default function BgmPlayer() {
       return 0.5
     }
   })
-  const [isMuted, setIsMuted] = useState(false)
+  // Mute by default until the user has created a project (so the intro video audio isn't competing)
+  const [isMuted, setIsMuted] = useState(!hasProjects)
   const [wantBgm, setWantBgm] = useState(() => {
     try {
       return (localStorage.getItem(STORAGE_KEY) ?? 'true') === 'true'
@@ -43,7 +44,7 @@ export default function BgmPlayer() {
     const audio = new Audio()
     audio.preload = 'auto'
     audio.loop = true
-    audio.volume = volumeRef.current
+    audio.volume = hasProjects ? volumeRef.current : 0
     audioRef.current = audio
 
     const onTimeUpdate = () => setCurrentTime(audio.currentTime)

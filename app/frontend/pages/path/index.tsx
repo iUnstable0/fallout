@@ -91,7 +91,7 @@ export default function PathIndex() {
         <div className="flex flex-col items-end space-y-6">
           {authUser?.is_trial && <SignUpCta signInPath={sign_in_path} />}
           <Leaderboard />
-          <BgmPlayer />
+          <BgmPlayer hasProjects={has_projects} />
         </div>
       </div>
 
@@ -106,9 +106,24 @@ export default function PathIndex() {
         </Tooltip>
         <Tooltip>
           <TooltipTrigger>
-            <ModalLink href="/projects" className="outline-0">
-              <img src="/icon/project.webp" alt="Projects" className="cursor-pointer w-25" />
-            </ModalLink>
+            {has_projects && !authUser?.is_trial ? (
+              <ModalLink href="/projects" className="outline-0">
+                <img src="/icon/project.webp" alt="Projects" className="cursor-pointer w-25" />
+              </ModalLink>
+            ) : (
+              <button
+                onClick={() =>
+                  notify(
+                    'alert',
+                    has_projects
+                      ? 'You need to verify your account before continuing!'
+                      : 'This is locked! Click on the star',
+                  )
+                }
+              >
+                <img src="/icon/project.webp" alt="Projects" className="cursor-pointer w-25" />
+              </button>
+            )}
           </TooltipTrigger>
           <TooltipContent>Projects</TooltipContent>
         </Tooltip>

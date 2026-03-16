@@ -1,4 +1,4 @@
-import { type ReactNode, useState, useRef } from 'react'
+import { type ReactNode, useState, useRef, useEffect } from 'react'
 import { router } from '@inertiajs/react'
 import { Modal } from '@inertiaui/modal-react'
 import Frame from '@/components/shared/Frame'
@@ -6,6 +6,36 @@ import Button from '@/components/shared/Button'
 import Input from '@/components/shared/Input'
 import TextArea from '@/components/shared/TextArea'
 import { Pagination, PaginationPage } from '@/components/shared/Pagination'
+
+function IntroVideo({ onContinue }: { onContinue: () => void }) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [ended, setEnded] = useState(false)
+
+  useEffect(() => {
+    videoRef.current?.play().catch(() => {})
+  }, [])
+
+  return (
+    <>
+      <div className="flex flex-col flex-1 min-h-0 items-center justify-center">
+        <video
+          ref={videoRef}
+          src="/intro.mp4"
+          className="w-full aspect-video rounded-lg"
+          autoPlay
+          playsInline
+          controls
+          onEnded={() => setEnded(true)}
+        />
+      </div>
+      <div className="flex justify-end mt-auto pt-4">
+        <Button type="button" onClick={onContinue} disabled={!ended}>
+          Continue
+        </Button>
+      </div>
+    </>
+  )
+}
 
 function ProjectsOnboarding({ is_modal }: { is_modal: boolean }) {
   const [name, setName] = useState('')
@@ -30,7 +60,11 @@ function ProjectsOnboarding({ is_modal }: { is_modal: boolean }) {
     <form onSubmit={submit} className="w-full h-full mx-auto p-8">
       <Pagination className="flex flex-col h-full">
         <PaginationPage>
-          {({ next }) => (
+          {({ next }) => <IntroVideo onContinue={next} />}
+        </PaginationPage>
+
+        <PaginationPage>
+          {({ next, prev }) => (
             <>
               <div className="flex flex-col flex-1 min-h-0">
                 <h1 className="font-bold text-3xl mb-4">Let's get started!</h1>
@@ -54,7 +88,10 @@ function ProjectsOnboarding({ is_modal }: { is_modal: boolean }) {
                   className="flex-1 min-h-lh overflow-y-auto resize-y"
                 />
               </div>
-              <div className="flex justify-end mt-auto pt-4">
+              <div className="flex justify-between mt-auto pt-4">
+                <Button variant="link" type="button" onClick={prev}>
+                  go back
+                </Button>
                 <Button type="button" onClick={next} disabled={!description.trim()}>
                   Continue
                 </Button>
