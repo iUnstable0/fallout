@@ -28,11 +28,8 @@ function IntroVideo({ onContinue }: { onContinue: () => void }) {
           onEnded={() => setEnded(true)}
         />
       </div>
-      <div className="flex justify-between mt-auto pt-4">
-        <Button variant="link" type="button" onClick={onContinue}>
-          skip
-        </Button>
-        <Button type="button" onClick={onContinue} disabled={!ended}>
+      <div className="flex justify-end mt-auto pt-4">
+        <Button type="button" onClick={onContinue}>
           Continue
         </Button>
       </div>
