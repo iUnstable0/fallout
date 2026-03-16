@@ -159,6 +159,8 @@ Rails.application.routes.draw do
   post "you_tube_videos/lookup" => "you_tube_videos#lookup", as: :lookup_you_tube_video
 
   get "faq" => redirect("/docs/faq") # Shortcut to FAQ docs page
+  get "info" => redirect("/docs")
+  get "about" => redirect("/docs")
   get "docs" => "markdown#show", as: :docs
   get "docs/*slug" => "markdown#show", as: :doc
 
