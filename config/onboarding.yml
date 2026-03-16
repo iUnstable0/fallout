@@ -35,7 +35,4 @@ steps:
       - "I've made guided projects!"
       - "I've made projects beyond guides!"
       - 'I live and breathe hardware'
-
-  - key: timelapse_reminder
-    type: dialogue
-    prompt: 'Remember to timelapse your work!'
+      
