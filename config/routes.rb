@@ -45,6 +45,9 @@
 #                        new_journal_entry GET    /journal_entries/new(.:format)                                                                journal_entries#new
 #                    preview_journal_entry POST   /journal_entries/preview(.:format)                                                            journal_entries#preview
 #                    lookup_you_tube_video POST   /you_tube_videos/lookup(.:format)                                                             you_tube_videos#lookup
+#                                      faq GET    /faq(.:format)                                                                                redirect(301, /docs/faq)
+#                                     info GET    /info(.:format)                                                                               redirect(301, /docs)
+#                                    about GET    /about(.:format)                                                                              redirect(301, /docs)
 #                                     docs GET    /docs(.:format)                                                                               markdown#show
 #                                      doc GET    /docs/*slug(.:format)                                                                         markdown#show
 #                          api_v1_projects GET    /api/v1/projects(.:format)                                                                    api/v1/projects#index

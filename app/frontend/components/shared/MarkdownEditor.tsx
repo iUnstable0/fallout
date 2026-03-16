@@ -706,19 +706,13 @@ export default function MarkdownEditor({
         {/* Toolbar */}
         {tab === 'write' && (
           <div className="flex items-center gap-0.5 border-b-2 border-dark-brown bg-light-brown/30 px-3 py-1">
-            <ToolbarButton
-              onClick={() => apply((v, s, e) => wrapSelection(v, s, e, '**', '**'))}
-              title="Bold (Cmd+B)"
-            >
+            <ToolbarButton onClick={() => apply((v, s, e) => wrapSelection(v, s, e, '**', '**'))} title="Bold (Cmd+B)">
               <BoldIcon />
             </ToolbarButton>
             <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '### ', false))} title="Heading">
               <HeadingIcon />
             </ToolbarButton>
-            <ToolbarButton
-              onClick={() => apply((v, s, e) => wrapSelection(v, s, e, '_', '_'))}
-              title="Italic (Cmd+I)"
-            >
+            <ToolbarButton onClick={() => apply((v, s, e) => wrapSelection(v, s, e, '_', '_'))} title="Italic (Cmd+I)">
               <ItalicIcon />
             </ToolbarButton>
             <div className="w-px h-4 bg-dark-brown/20 mx-1" />
@@ -735,10 +729,7 @@ export default function MarkdownEditor({
             <ToolbarButton onClick={openFilePicker} title="Upload image">
               <ImageIcon />
             </ToolbarButton>
-            <ToolbarButton
-              onClick={() => apply((v, s, e) => prefixLines(v, s, e, '- ', false))}
-              title="Unordered list"
-            >
+            <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '- ', false))} title="Unordered list">
               <UnorderedListIcon />
             </ToolbarButton>
             <ToolbarButton onClick={() => apply((v, s, e) => prefixLines(v, s, e, '', true))} title="Ordered list">

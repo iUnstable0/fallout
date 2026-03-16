@@ -153,7 +153,15 @@ export default function MarkdownLayout({ children }: { children: ReactNode }) {
         className="fixed top-4 left-4 z-30 lg:hidden bg-light-brown border border-dark-brown/20 rounded-lg p-2 shadow-md"
         aria-label="Open navigation"
       >
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        >
           <line x1="3" y1="6" x2="21" y2="6" />
           <line x1="3" y1="12" x2="21" y2="12" />
           <line x1="3" y1="18" x2="21" y2="18" />
@@ -161,9 +169,7 @@ export default function MarkdownLayout({ children }: { children: ReactNode }) {
       </button>
 
       {/* Mobile overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setMobileOpen(false)} />
-      )}
+      {mobileOpen && <div className="fixed inset-0 z-40 bg-black/30 lg:hidden" onClick={() => setMobileOpen(false)} />}
 
       {/* Mobile slide-out sidebar */}
       <aside
