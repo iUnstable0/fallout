@@ -45,16 +45,20 @@ At the top of the screen, you’ll see the toolbar. This is where all the tools 
 
 It might look a little overwhelming at first. That’s totally normal. Let’s quickly go over the most important tools so you know what’s what. You’ll get more hands on practice with them in the next tutorial.
 
-**Components**  
+### Components
+
 This tool lets you add symbols from the parts library. You can search for things like microcontrollers, connectors, regulators, and more, then place their symbols into your schematic.
 
-**Resistor**  
+### Resistor
+
 This is a shortcut for quickly placing a resistor symbol. If you right click it, you’ll see options for other common passive components like capacitors, inductors, and diodes. These are used so often that they get their own quick access tool.
 
-**Wire**  
+### Wire
+
 Pretty self explanatory. This tool lets you draw wires to connect different components together.
 
-**Net Flag/Label**  
+### Net Flag/Label
+
 Think of this as a cleaner way to connect things. Instead of drawing a long wire across your schematic, you can place net flags and give them the same name. If two net flags share a name, they’re electrically connected, even if there’s no visible wire between them. This helps keep your schematic neat and easy to read.
 
 Now on the right side you have the property sidebar, it basically shows you the property of whatever component is selected, by default if nothing is selected it shows you the properties of the page.
@@ -75,19 +79,24 @@ The PCB editor is where your design becomes real. This is where you define how y
 
 Just like the schematic editor, the PCB editor also has a toolbar at the top with the tools you’ll use most often. Don’t worry if they look unfamiliar at first. Here’s a quick and simple rundown of the first five tools, without getting too technical:
 
-**Pad**  
+### Pad
+
 Pads are the copper landing points where component leads or pins get soldered. Every footprint is made up of pads, and you can also place custom pads if needed.
 
-**Via**  
+### Via
+
 A via is a small hole that connects copper traces between different layers of the board. For example, it lets you route a trace from the top layer to the bottom layer.
 
-**Board Outline**  
+### Board Outline
+
 This defines the actual shape and size of your PCB. Whatever you draw here is what the manufacturer will cut out.
 
-**Copper Area**  
+### Copper Area
+
 This tool lets you create large copper regions, usually for things like ground planes or power planes. Instead of routing lots of individual traces, you can pour a copper area and connect it to a specific net.
 
-**Fill Region**  
+### Fill Region
+
 Similar to a copper area, but more general purpose. It fills a defined space with copper and is often used for shielding or custom copper shapes.
 
 On the right sidebar, you’ll see a long list of layers. At first glance, it can look a little intimidating. There are a lot of them, and the names might not immediately make sense.
@@ -376,8 +385,6 @@ And just like that, **schematics complete!** :D
 
 Don’t forget to **save your work** by pressing `Ctrl + S` so all your hard work is safe. Your USB hub is now fully laid out on paper, ready for the next step.
 
----
-
 ## PCB
 
 Now comes the fun part, at least for me. It’s time to design your PCB and start routing traces. This is where everything stops being abstract and turns into something real.
@@ -399,8 +406,6 @@ At the beginning of a design, it’s usually best to hide the ground ratlines. G
 To do this, go to the left sidebar and open the **Net** tab. Expand the **Ratlines** section, find the **GND** net, and toggle its visibility off.
 
 <video src="/docs-assets/guided-projects/usb-hub/20260215-0123-23.5098350.mp4" autoplay muted loop playsinline></video>
-
----
 
 ### Planning it out
 
@@ -492,8 +497,6 @@ In the end, your board should look something like this. Every power pin should h
 
 ![](/docs-assets/guided-projects/usb-hub/img-20260215122404.webp)
 
----
-
 ### Routing
 
 Now we move on to the fun and satisfying part: routing! To start, you can use the **Routing** tool on the top bar or just hit **Alt + W**.
@@ -570,8 +573,6 @@ Looking pretty sick!
 
 At this point, you’re basically done and could go ahead and [order your board](./Ordering.md). But if you want to add some extra style, keep reading this guide.
 
----
-
 ### Adding a keychain slot
 
 At the beginning when I was planning out layout, I sketched a small hole in the PCB so it could double as a keychain. Now it’s time to actually add that slot to the board. If you are not into the keychain idea, you can still add mounting holes, which I highly recommend. If you ever decide to design an enclosure later, mounting holes make it much easier to screw the board into a case and keep everything secure.
@@ -597,8 +598,6 @@ When you place it, you will need to enter a radius. That value depends on the sc
 At a minimum, I suggest adding at least two mounting holes, but if you have the space, four is even better. For placement, spread them out and choose strategic positions. In my case, these spots would make the most sense if I were adding mounting holes.
 
 ![](/docs-assets/guided-projects/usb-hub/img-20260216132008.webp)
-
----
 
 ### Silkscreen
 
@@ -638,8 +637,6 @@ Now I’ll follow the same steps I used for the top layer and add some designs t
 
 <video src="/docs-assets/guided-projects/usb-hub/20260217-0009-59.5174061.mp4" autoplay muted loop playsinline></video>
 
----
-
 ### Polishing
 
 Before we order our boards, there are a few small touches you can add to make them look more polished, like filleting the edges.
@@ -661,8 +658,6 @@ Remember to always rebuild your zones by pressing Shift+B.
 Notice how much cleaner our board looks now!
 
 ![](/docs-assets/guided-projects/usb-hub/img-20260216191609.webp)
-
----
 
 ## Ordering
 
