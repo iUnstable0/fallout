@@ -67,6 +67,8 @@ active_record_encryption:
 
 This creates `config/master.key` (keep this secret, never commit it) and a new `config/credentials.yml.enc`.
 
+Do not commit the resulting credentials, as it won't be compatible with this repository.
+
 > [!CAUTION]
 > If you're on the fallout team, please ask for the .env instead.
 
