@@ -1,0 +1,153 @@
+| title | How do I "fix" my project? |
+| description | Common reasons projects get returned and how to fix them. |
+| priority | 6 |
+| --- | --- |
+
+# How do I “fix” my project?
+
+<div class="-mt-4">
+  <small>_Modified from @alexren’s [hwdocs.hackclub.com](https://hwdocs.hackclub.dev/other/returns/)_</small>
+</div>
+
+Most projects get returned for the following reasons:
+
+- Missing project files (firmware, step, etc)
+- Incomplete CAD 3D model, firmware, or wiring
+- Poor quality README
+- Bloated or overkill parts list
+- Lack of polish and refinement
+- Plagiarism or fraud
+
+We’re going to quickly explain what each reason means, and how/why you should fix it.
+
+<aside class="callout callout-info">
+
+**These are not arbitrary metrics.** We’re here to help create **real, shipped** projects. Don’t know what that means? You should probably read our page on [what is Shipping](/docs/requirements/what-is-shipping).
+
+</aside>
+
+## Missing project files
+
+This means you are missing the source files for your project\! It's _really_ important you have these, since it means that other people (hint: this includes reviewers) can actually review your projects
+
+STLs, OBJs, 3MFs, or other mesh formats etc are not valid files for 3D models. They don’t preserve the original model’s information, and are super difficult to work off of.
+
+You should post a source file for the respective program (i.e .f3d, .f3d, link to Onshape, etc) and a .STEP file.
+
+Make sure you have as much firmware as you can without the physical hardware. E.g. almost the entirety of any keyboard's firmware can be generated purely from the schematic, and this also goes for many other projects too.
+
+For PCBs, please include .kicad_pro, .kicad_sch, and .kicad_pcb files too. Similar to 3D models, gerbers are not enough since it doesn’t preserve the original design, and are super difficult to work off of.
+
+## Incomplete 3D model, firmware, or wiring diagram
+
+### 3D models
+
+This means your CAD model is missing parts that are crucial to your assembly. Just having the case isn't enough\! You should also include any electronics (Raspberry Pis, Screens, Motors, etc) that you'll use.
+
+Adding all the electronics & components is really, _really_, important. Not only for yourself, but also because it helps you avoid errors when you're actually assembling your project together.
+
+Unlike software, errors in hardware can be very expensive, not just in money, but also time. One wrong part can set you back multiple weeks. You really want to avoid that.
+
+Fortunately, there is a solution to this\! Tools like Fusion360 and Onshape allow you to create 1:1 models of your designs vs real life. That means that as long as everything matches up in your 3D model, everything will match in real life too\!
+
+<aside class="callout">
+
+Granted, this does have some limitations. CAD software has trouble accounting for IRL properties (3D printing inaccuracies, thermal expansion, etc) that need to be accounted for. Check out [designing for reality](https://hwdocs.hackclub.dev/design/design-tips/#designing-for-real-life) to learn how to fix this\!
+
+</aside>
+
+### Firmware
+
+This likely means your firmware is too simple, is missing libraries, or instructions to compile. It’s really easy to overlook the firmware of the project. Make sure you have as much firmware as you can without the physical hardware. Firmware to “test” to make sure all components are working is not enough, you need to have put in an attempt to code the logic of your project.
+
+E.g. almost the entirety of any keyboard's firmware can be generated purely from the schematic, and this also goes for many other projects too.
+
+### Wiring diagram
+
+This means your wiring diagram is too confusing, or incomplete. Singular lines connecting screenshots of parts is not a wiring diagram. You need to clearly label each connection between components.
+
+This is really important, not only for yourself, but also because it helps you avoid errors when you're actually assembling your project together. Unlike software, errors in hardware can be very expensive, not just in money, but also time. One wrong part can set you back multiple weeks. You really want to avoid that.
+
+## Poor Quality README
+
+This one is a pretty easy fix. Usually, it's because you're missing things described in the submission requirements [for your design](/docs/requirements/submitting-design), or [for your build](/docs/requirements/submitting-build).
+
+It's really important you have these because it makes your project understandable. Otherwise, whoever is looking at your project is going to spend a _lot_ of time trying to figure the above out\!
+
+Do it not just for your reviewer, but also for yourself. It'll help you so much when you want to share your project to someone else, or when you look back on this project in 2-3 years and have forgotten the details.
+
+## Bloated/Overkill parts list (BOM)
+
+This is usually a rejection because you're asking to get parts that are way more powerful than what you need, or cost a disproportionate amount relative to what it would commonly cost.
+
+A very common example is getting $300 custom CNC'd parts, super high quality ESCs, etc. for a simple battlebot or drone. While it would be awesome to be able to give funding for projects like these, the problem is that the majority of the cost goes into parts that you had almost 0 hand in designing.
+
+If, for example, you instead designed your own ESCs, transmitters, etc, that’s be totally reasonable\! This is because the majority of the cost goes into a component that you yourself designed.
+
+Another example is getting extra parts / things that are just not needed:
+
+- An entire spool of filament for a 100g print
+- An extra MCU "just in case"
+- ENIG PCBs
+
+The last example is just poor part sourcing. This means getting an Arduino for $35, a stepper motor for $20, etc. This usually just means you need to buy from better suppliers\! This one's an easy fix, check out our [sourcing guide.](/docs/resources/sourcing-parts)
+
+Hack Club is a nonprofit with limited funding. It's really important that we are all efficient with our projects, because it means every bit of money we have can go further in the program.
+
+## Lack of polish
+
+What the heck is project polish?
+
+Polishing your project is the process of turning your project from a minimum technical demo to a completed project.
+
+The easiest way to think of polishing your design is adding detail to it\!
+
+For example, on a functional level, almost every keyboard can be reduced down to a 60%/75%/TKL layout in a flat rectangular block
+
+What makes them cool & unique are all the details that the designers put in. The different tilt angles, chamfers, engravings, etc.
+
+### Let’s take a look at an example
+
+Take a look at Orpheuspad, the example macropad Alex made for Hack Club’s Hackpad. It's not a keyboard, but the same principles apply.
+
+Here's what it looked like as a purely functional prototype:![Orpheuspad before polish](/docs-assets/requirements/fix-my-project/orpheuspad-before.webp)  
+Looks decent, but could be _way_ better. Here's what it looks like after Alex polished it a ton\!
+
+![Orpheuspad after polish](/docs-assets/requirements/fix-my-project/orpheuspad-after.webp)  
+Notice the details? Alex added the following:
+
+- Embossed triangle pattern in the middle
+- 5 degree tilt at the bottom
+- Rounded corners
+- Chamfers across the entire case
+- Embossed Hack Club "h" logo in the top right
+- First layer colour change
+- Different heights on the acrylic
+
+There's more, but what we want you to notice is how _none_ of those changes are required for the function of the macropad, yet they made the project way better & cooler. Alex turned Orpheuspad from a plain rectangular block, to a sharp, tech-themed desk gadget.
+
+<aside class="callout callout-info">
+
+This is what we mean when we ask for project polish. It's the process of turning your demo into a finished project.
+
+</aside>
+
+A very important thing to remember is that making hardware projects is usually more than a pure engineering challenge. It's also in many respects an artistic endeavour.
+
+## Plagiarism or fraud
+
+The following is NOT okay:
+
+- [ ] Following tutorials almost exactly 1:1
+- [ ] Submitting projects designed by other people as your own
+- [ ] Completely AI generating your project design, journals, or content
+- [ ] Intentionally tracking more time than normal on timelapses
+  - [ ] Leaving your timelapse running while not doing anything
+  - [ ] Tracking time for stuff that isn’t applicable to be tracked
+  - [ ] Attempting to inflate the amount of time tracked, through both automated and manual means
+
+<aside class="callout callout-alert">
+
+Any convicted plagiarism or fraud will result in a permanent ban from hardware programs and potentially Hack Club as a whole. _Do not commit fraud._
+
+</aside>

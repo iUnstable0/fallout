@@ -5,15 +5,17 @@ class MarkdownController < ApplicationController
   skip_after_action :verify_policy_scoped # No index action; no policy-scoped queries
 
   def show
+    not_found unless params[:soup] == "true" # Docs gated behind ?soup=true while in development
+
     slug = params[:slug].to_s
     slug = "index" if slug.blank?
     not_found unless valid_slug?(slug)
 
     base = Rails.root.join("docs")
     candidates = if slug == "index"
-      [ base.join("index.md") ]
+      [ base.join("index.md"), base.join("index.mdx") ]
     else
-      [ base.join("#{slug}.md"), base.join(slug, "index.md") ]
+      [ base.join("#{slug}.md"), base.join("#{slug}.mdx"), base.join(slug, "index.md"), base.join(slug, "index.mdx") ]
     end
 
     path = candidates.find { |p| File.exist?(p.to_s) }
@@ -24,10 +26,14 @@ class MarkdownController < ApplicationController
     meta = helpers.docs_meta_for_url("/docs#{slug == 'index' ? '' : "/#{slug}"}")
     page_title = meta&.dig(:title).presence || slug.tr("-_/", " ").split.map(&:capitalize).join(" ")
 
+    index_meta = helpers.docs_meta_for_url("/docs")
+    index_title = index_meta&.dig(:title).presence || "Overview"
+
     render inertia: {
       content_html: content_html,
       page_title: page_title,
-      menu_items: helpers.docs_grouped_menu_items
+      menu_items: helpers.docs_grouped_menu_items,
+      index_title: index_title
     }
   end
 

@@ -158,6 +158,7 @@ Rails.application.routes.draw do
   post "journal_entries/preview" => "journal_entries#preview", as: :preview_journal_entry
   post "you_tube_videos/lookup" => "you_tube_videos#lookup", as: :lookup_you_tube_video
 
+  get "faq" => redirect("/docs/faq") # Shortcut to FAQ docs page
   get "docs" => "markdown#show", as: :docs
   get "docs/*slug" => "markdown#show", as: :doc
 

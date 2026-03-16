@@ -44,6 +44,7 @@ module MarkdownHelper
 
     def link(href, title, content)
       href = href.to_s
+      href = append_soup_param(href) if guide_internal_link?(href)
       attrs = []
       attrs << %(href="#{ERB::Util.html_escape(href)}")
       attrs << %(title="#{ERB::Util.html_escape(title)}") if title
@@ -84,6 +85,11 @@ module MarkdownHelper
 
     def default_port(scheme)
       scheme.to_s.downcase == "https" ? 443 : 80
+    end
+
+    def append_soup_param(href)
+      separator = href.include?("?") ? "&" : "?"
+      "#{href}#{separator}soup=true"
     end
   end
 
@@ -178,23 +184,81 @@ module MarkdownHelper
     end
 
     processed = preprocess_checkboxes(text)
-    processed = preprocess_callouts(processed, @__markdown_renderer)
-    @__markdown_renderer.render(processed).html_safe
+    html = preprocess_html_blocks(processed, @__markdown_renderer)
+    postprocess_table_cells(html, @__markdown_renderer).html_safe
+  end
+
+  def postprocess_table_cells(html, renderer)
+    html.gsub(%r{<td([^>]*)>(.*?)</td>}m) do
+      attrs = Regexp.last_match(1)
+      inner = Regexp.last_match(2).strip
+      # Convert <br> back to newlines so the markdown renderer can create block elements
+      md = inner.gsub(/<br\s*\/?>/, "\n")
+      "<td#{attrs}>#{renderer.render(md)}</td>"
+    end
   end
 
   def preprocess_checkboxes(text)
-    text.gsub(/^- \[ \] /m, '<input type="checkbox" disabled> ').gsub(/^- \[x\] /im, '<input type="checkbox" checked disabled> ')
+    text
+      .gsub(/^(\s*)- \[ \] /m, '\1- <span class="checkbox-dont">&#x2717;</span> ')
+      .gsub(/^(\s*)- \[x\] /im, '\1- <span class="checkbox-do">&#x2713;</span> ')
   end
 
-  def preprocess_callouts(text, renderer)
-    return text unless text.include?("<aside")
+  def preprocess_html_blocks(text, renderer)
+    # Extract balanced top-level <aside>/<div> blocks from markdown before Redcarpet processes it.
+    # Renders markdown inside leaf-level blocks, then splices the finished HTML back in as placeholders
+    # so Redcarpet doesn't mangle nested HTML tags.
+    placeholders = {}
+    result = text
 
-    text.gsub(%r{<aside(\s[^>]*)?>\s*(.*?)\s*</aside>}m) do
-      attrs = Regexp.last_match(1).to_s
-      inner_md = Regexp.last_match(2)
-      inner_html = renderer.render(inner_md)
-      "<aside#{attrs}>#{inner_html}</aside>"
+    # <html>...</html> blocks pass through with zero markdown processing.
+    result = result.gsub(%r{^<html>[ \t]*\n(.*?)\n[ \t]*</html>}m) do
+      key = "HTMLBLOCK#{placeholders.size}x#{SecureRandom.hex(4)}"
+      placeholders[key] = Regexp.last_match(1)
+      key
     end
+
+    # Find and extract balanced top-level HTML blocks
+    scan_from = 0
+    loop do
+      open_match = result.match(%r{^<(aside|div)(\s[^>]*)?>[ \t]*$}m, scan_from)
+      break unless open_match
+
+      tag = open_match[1]
+      block_start = open_match.begin(0)
+      search_from = open_match.end(0)
+      depth = 1
+      tag_re = %r{<(/?)(aside|div)[\s>/]}
+
+      while depth > 0
+        next_tag = tag_re.match(result, search_from)
+        break unless next_tag
+        search_from = next_tag.end(0)
+        depth += (next_tag[1] == "/" && next_tag[2] == tag) ? -1 : (next_tag[1] == "" && next_tag[2] == tag ? 1 : 0)
+      end
+
+      # Skip malformed blocks where we never found the closing tag
+      if depth > 0
+        scan_from = open_match.end(0)
+        next
+      end
+
+      block_html = result[block_start...search_from]
+      # Render markdown inside leaf-level child blocks
+      processed_block = block_html.gsub(%r{(<(?:aside|div)(?:\s[^>]*)?>)[ \t]*\n((?:(?!<(?:aside|div)[\s>]).)*?)\n[ \t]*(</(?:aside|div)>)}m) do
+        "#{Regexp.last_match(1)}#{renderer.render(Regexp.last_match(2))}#{Regexp.last_match(3)}"
+      end
+
+      key = "HTMLBLOCK#{placeholders.size}x#{SecureRandom.hex(4)}"
+      placeholders[key] = processed_block
+      result = result[0...block_start] + key + result[search_from..]
+      scan_from = block_start + key.length
+    end
+
+    # Let Redcarpet render the remaining markdown, then restore HTML blocks
+    rendered = renderer.render(result)
+    placeholders.each { |key, html| rendered.sub!(%r{<p>#{key}</p>|#{key}}, html) }
+    rendered
   end
 
   def render_markdown_file(path, base_url: nil)
@@ -209,7 +273,7 @@ module MarkdownHelper
   end
 
   def docs_metadata(base:, url_prefix:, default_index_title: "")
-    paths = Dir.glob(base.join("**/*.md").to_s)
+    paths = Dir.glob(base.join("**/*.{md,mdx}").to_s)
     stats = paths.map { |p| [ p, File.mtime(p).to_i ] }.sort_by(&:first)
     return build_docs_metadata(base, url_prefix, default_index_title, paths) if Rails.env.development?
 
@@ -226,11 +290,11 @@ module MarkdownHelper
 
       slug = nil
       url  = nil
-      if rel == "index.md"
+      if rel.match?(/\Aindex\.mdx?\z/)
         slug = ""
         url  = url_prefix
       else
-        s = rel.sub(/\.md\z/, "")
+        s = rel.sub(/\.mdx?\z/, "")
         if File.basename(s) == "index"
           dir = File.dirname(s)
           slug = (dir == "." ? "" : dir)

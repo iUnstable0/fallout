@@ -83,7 +83,7 @@ export default function PathIndex() {
   return (
     <>
       <FlashMessages />
-      <div className="fixed top-6 left-6 right-6 z-20">
+      <div className="fixed z-20 top-6 left-6 right-6">
         <Header koiBalance={user.koi} avatar={user.avatar} displayName={user.display_name} />
       </div>
 
@@ -95,19 +95,19 @@ export default function PathIndex() {
         </div>
       </div>
 
-      <div className="fixed bottom-6 left-6 flex flex-col items-start space-y-4 z-10">
+      <div className="fixed z-10 flex flex-col items-start space-y-4 bottom-6 left-6">
         <Tooltip>
           <TooltipTrigger>
-            <Link href="/docs">
-              <img src="/icon/guide.webp" alt="Guide" className="w-25 cursor-pointer" />
-            </Link>
+            <button onClick={() => notify('alert', "We're still working on the Docs. Check back later!")}>
+              <img src="/icon/guide.webp" alt="Guide" className="cursor-pointer w-25" />
+            </button>
           </TooltipTrigger>
           <TooltipContent>Docs & Resources</TooltipContent>
         </Tooltip>
         <Tooltip>
           <TooltipTrigger>
             <ModalLink href="/projects" className="outline-0">
-              <img src="/icon/project.webp" alt="Projects" className="w-25 cursor-pointer" />
+              <img src="/icon/project.webp" alt="Projects" className="cursor-pointer w-25" />
             </ModalLink>
           </TooltipTrigger>
           <TooltipContent>Projects</TooltipContent>
@@ -115,7 +115,7 @@ export default function PathIndex() {
         <Tooltip>
           <TooltipTrigger>
             <button onClick={() => notify('alert', "The shop isn't open yet. Check back later!")}>
-              <img src="/icon/shop.webp" alt="Shop" className="w-25 cursor-pointer" />
+              <img src="/icon/shop.webp" alt="Shop" className="cursor-pointer w-25" />
             </button>
           </TooltipTrigger>
           <TooltipContent>Shop</TooltipContent>
@@ -126,7 +126,7 @@ export default function PathIndex() {
               className="col-span-2 -mt-4"
               onClick={() => notify('alert', "The clearing isn't open yet. Check back later!")}
             >
-              <img src="/icon/clearing.webp" alt="Clearing" className="w-50 cursor-pointer" />
+              <img src="/icon/clearing.webp" alt="Clearing" className="cursor-pointer w-50" />
             </button>
           </TooltipTrigger>
           <TooltipContent>Clearing</TooltipContent>

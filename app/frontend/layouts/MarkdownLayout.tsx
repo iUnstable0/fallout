@@ -17,6 +17,11 @@ interface MenuSection {
 
 type MenuItem = MenuLink | MenuSection
 
+function soupHref(href: string) {
+  const sep = href.includes('?') ? '&' : '?'
+  return `${href}${sep}soup=true`
+}
+
 function NavLink({
   href,
   active,
@@ -30,8 +35,8 @@ function NavLink({
 }) {
   return (
     <Link
-      href={href}
-      className={`block px-3 py-1.5 ${subpage ? 'rounded-r' : 'rounded'} ${active ? 'bg-brown text-light-brown font-bold' : ''}`}
+      href={soupHref(href)}
+      className={`block px-3 py-1.5 ${subpage ? 'rounded-r' : 'rounded'} ${active ? 'bg-brown text-light-brown font-semibold' : ''}`}
     >
       {children}
     </Link>
@@ -84,20 +89,20 @@ function CollapsibleSection({
 }
 
 export default function MarkdownLayout({ children }: { children: ReactNode }) {
-  const { menu_items } = usePage<{ menu_items: MenuItem[] }>().props
+  const { menu_items, index_title } = usePage<{ menu_items: MenuItem[]; index_title: string }>().props
   const currentPath = usePage().url.split('?')[0]
 
   return (
-    <div className="min-h-screen">
-      <aside className="fixed top-0 left-0 h-screen w-80 p-4 flex z-10">
+    <div className="relative min-h-screen">
+      <aside className="fixed top-0 left-0 z-10 flex h-screen p-4 w-90">
         <Frame className="flex-1">
           <nav className="flex flex-col gap-0.5 p-2 overflow-y-auto h-full">
             <Link href="/path" className="block px-3 py-1.5">
               ← Back to the Path
             </Link>
-            <hr className="border-dark-brown/20 my-1" />
+            <hr className="my-1 border-dark-brown/20" />
             <NavLink href="/docs" active={currentPath === '/docs'}>
-              Overview
+              {index_title}
             </NavLink>
             {menu_items.map((item, i) =>
               item.type === 'section' ? (
@@ -111,9 +116,9 @@ export default function MarkdownLayout({ children }: { children: ReactNode }) {
           </nav>
         </Frame>
       </aside>
-      <div className="ml-80">
+      <div className="ml-90">
         <FlashMessages />
-        <main className="py-6 max-w-4xl mx-auto">{children}</main>
+        <main className="max-w-3xl py-8 lg:ml-20">{children}</main>
       </div>
     </div>
   )

@@ -1,0 +1,109 @@
+| title | 3. How to Timelapse |
+| description | How to record and submit timelapses to verify your hours. |
+| priority | 3 |
+| --- | --- |
+
+# Why timelapse?
+
+At 4AM, the Fallout team sat at a beaten couch in HQ and asked ourselves:
+
+> **“How the heck do we make sure people are really building for 60 hours?”**
+
+\[img: us thinking\]
+
+Don’t get me wrong, we trust you\! But people have inflated their hours in the past before. And we want to bring absolutely insane people with you to Shenzhen.
+
+So… We came to the answer. Timelapses!
+
+## How to track time?
+
+<div class="-mt-4">
+  <small>_Credits to [@Aryan Rao](https://github.com/aryanscodingden) for documenting this!_</small>
+</div>
+
+We highly recommend using [Lapse](https://lapse.hackclub.com), Hack Club’s own timelapsing website\! It runs on your browser and directly syncs to Fallout.
+
+<aside class="callout callout-alert">
+
+**Lapse is built and optimized for Chrome.** We recommend using that for the best experience\!
+
+To make sure Lapse works with your browser, we recommend doing a quick test recording before you start your project. If you face any issues, report it in [\#lapse-help](https://hackclub.enterprise.slack.com/archives/C09NVLWU61E) on our Slack!
+
+</aside>
+
+With Lapse, you can record:
+
+- Your screen
+- Through a Webcam
+
+After you’re done recording, make sure to:
+
+1. Give it a descriptive name so you can find it later.
+2. Go through the footage\! To remove anything you don't want shown.
+3. **Click "Publish."** Keep it unlisted so only we can see it, or make it public for everyone to see your awesome work\!
+
+<aside class="callout callout-info">
+
+If your timelapse is unlisted, it will only be visible to a small number of trusted and verified reviewers and Hack Club staff (who all have been checked and NDA-ed).
+
+**We only use your timelapse to verify that you’ve put in the hours and progress.**
+
+</aside>
+
+**Syncing to Hackatime is optional\!** If you do, save it to the same Hackatime under the SAME NAME. You can only sync a Lapse with Hackatime ONCE.
+
+**If you face any issues with lapse, report it in [\#lapse-help](https://hackclub.enterprise.slack.com/archives/C09NVLWU61E) on our Slack**
+
+## Other Options Instead of Lapse\!
+
+### 1. Screen Record + YouTube Upload
+
+OBS is a popular tool for screen recording, but other tools can work as well. Just make sure to follow the requirements below\!
+
+For screen recording via OBS, we recommend using a lower resolution and framerate to save on resources. We don't need a super high quality video, just something that shows what you're working on and system clock clearly. Check out the recommended settings at the end of this page\!
+
+Requirements:
+
+- We need to be able to roughly tell what you're working on, so make sure the screen is visible and clear enough to see.
+- Your system clock/time should be clearly visible. If you’re filming yourself, show an IRL clock.
+
+### 2. Using your Phone + YouTube Upload
+
+If you have a low-end PC (and Lapse isn’t working there\!), you're welcome to record using whatever app you want on your phone, and upload to YouTube. Just make sure to follow the requirements below\!
+
+Another option is to set up your phone as a camera using [DroidCam](https://droidcam.app/). Check Aryan's guide [on how to set up Droidcam on OBS](https://docs.google.com/document/d/1Cd54YRN9yNIJj-6Rb0Wyu_rAPPckHcV8HFDuxjR0rW0/edit?usp=sharing)\!
+
+Requirements:
+
+- Your phone needs to be facing your monitor / laptop screen
+- We need to be able to roughly tell what you're working on, so make sure the screen is visible and clear enough to see.
+- Your system clock/time should be clearly visible, or an IRL clock.
+
+### 3. Go Live on YouTube
+
+You can also livestream on Youtube\! Use OBS or any broadcasting software you want to stream to Youtube Live. It's okay if the stream is unlisted, but make sure to follow the requirements below\!
+
+However, you must:
+
+- Make sure DVR is on Youtube Studio. [Read here](https://support.google.com/youtube/answer/9296823?hl=en) on how to enable it\!
+- Make sure what you're working on is visible and clear enough to see.
+- Your system time should be clearly visible.
+
+The frame rate and resolution don't matter\! It just needs to show your system clock and screen.
+
+## Recommended OBS Settings (Windows)
+
+Recommendations for OBS Settings that have been tested on Windows\!
+
+**Low-End PCs:**  
+Go to OBS \> Settings \> Output \> Set Output Mode to Advanced.  
+Set Settings to
+
+- Bitrate: 2000 KBPS
+- CPU Usage Preset \- ultrafast
+- Encoder: Hardware encoder (Nvidia NVENC or AMD AMF or Apple VT) if available. Use x264 if not.
+- Output (Scaled) Resolution: 854 x 480 (480p) (this is under the tab video in obs settings)
+- FPS: can be from 10-24
+- Disable Preview: Right-click the canvas and uncheck "Enable Preview" to save GPU resources.
+
+_If you have recommendations for Mac, Linux, or other setups, please share it with us!_
