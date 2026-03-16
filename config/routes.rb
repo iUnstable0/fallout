@@ -167,7 +167,7 @@ Rails.application.routes.draw do
   get "docs" => "markdown#show", as: :docs
   get "docs/*slug" => "markdown#show", as: :doc
 
-  get "sentry-test" => "sentry_test#show" unless Rails.env.production? # Dev-only page to verify Sentry frontend error capture
+  get "sentry-test" => "sentry_test#show"
 
   namespace :api do
     namespace :v1 do
