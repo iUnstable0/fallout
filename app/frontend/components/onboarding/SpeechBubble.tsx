@@ -1,12 +1,15 @@
+import type { ReactNode } from 'react'
+
 type BubbleProps = {
-  text: string
+  text?: string
+  children?: ReactNode
   bg?: string
   dir?: string
 }
 
-const SpeechBubble = ({ text, bg = 'white', dir = '' }: BubbleProps) => (
+const SpeechBubble = ({ text, children, bg = 'white', dir = '' }: BubbleProps) => (
   <div className={`relative bg-${bg} h-auto w-auto p-3 sm:px-6 sm:py-4 rounded-2xl border-2 border-dark-brown`}>
-    <span className="relative z-1 text-base lg:text-lg text-dark-brown text-center font-bold">{text}</span>
+    <span className="relative z-1 text-base lg:text-lg text-dark-brown text-center font-bold">{children ?? text}</span>
     {dir === '' ? (
       <svg className="absolute -bottom-4 left-1/2 -translate-x-1/2" width="24" height="16" viewBox="0 0 24 16">
         <polygon points="0,0 24,0 12,16" className="fill-white stroke-dark-brown" strokeWidth="2" />

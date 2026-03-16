@@ -9,6 +9,7 @@
   --font-outfit: 'Outfit', sans-serif;
   --color-dark-blue:#007BDA;
   --color-blue: #38c9ff;
+  --color-light-blue:#C3EFFF;
   --color-dark-brown: #61453a;
   --color-brown: #9f715d;
   --color-light-brown: #edd1b0;
@@ -28,6 +29,7 @@
 
 :root {
   @apply font-outfit bg-light-brown text-dark-brown overscroll-none;
+  scroll-behavior: smooth;
 }
 
 /* macOS-style thin translucent scrollbars */
@@ -131,6 +133,10 @@ textarea:focus {
   border-radius: 50%;
   background: #61453a;
   border: none;
+}
+
+.sticker {
+  will-change: transform;
 }
 
 .markdown-content {
