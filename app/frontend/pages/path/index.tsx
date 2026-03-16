@@ -88,7 +88,7 @@ export default function PathIndex() {
       </div>
 
       <div className="fixed top-2 bottom-2 right-2 xs:top-6 xs:bottom-6 xs:right-6 z-10 flex items-end pt-[10%]">
-        <div className="flex flex-col items-center justify-center w-full h-full bg-blue space-y-6">
+        <div className="flex flex-col items-center justify-center w-full h-full space-y-6">
           {authUser?.is_trial && <SignUpCta signInPath={sign_in_path} />}
           {/* <Leaderboard /> */}
           <div className="hidden xs:block">
