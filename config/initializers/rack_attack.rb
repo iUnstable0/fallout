@@ -44,8 +44,8 @@ class Rack::Attack
   end
 
   # Custom throttle response
-  self.throttled_responder = lambda do |env|
-    retry_after = env["rack.attack.match_data"][:period]
+  self.throttled_responder = lambda do |request|
+    retry_after = request.env["rack.attack.match_data"][:period]
     [
       429,
       {
@@ -57,7 +57,7 @@ class Rack::Attack
   end
 
   # Custom blocklist response
-  self.blocklisted_responder = lambda do |_env|
+  self.blocklisted_responder = lambda do |_request|
     [
       403,
       { "Content-Type" => "text/plain" },
