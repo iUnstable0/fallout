@@ -255,6 +255,23 @@ class User < ApplicationRecord
     0
   end
 
+  def self.airtable_sync_table_id
+    "tblV14N3tTuO9VhlH"
+  end
+
+  def self.airtable_sync_sync_id
+    "KWs8kDOV"
+  end
+
+  def self.airtable_sync_field_mappings
+    {
+      "Email" => :email,
+      "Country" => ->(u) { u.latest_locatable_visit&.country },
+      "Created At" => ->(u) { u.created_at&.iso8601 },
+      "Email Verified" => ->(u) { !u.trial? }
+    }
+  end
+
   def needs_onboarding?
     !onboarded?
   end

@@ -18,3 +18,8 @@ production:
     class: UptimePingJob
     queue: uptime
     schedule: every minute
+
+  airtable_sync:
+    class: AirtableSyncJob
+    queue: background
+    schedule: every 5 minutes
