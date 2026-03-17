@@ -25,8 +25,8 @@ module Fallout
     # Allow reading existing plaintext values while transitioning to encrypted device_token
     config.active_record.encryption.support_unencrypted_data = true
 
-    # Mission Control Jobs — disable built-in HTTP Basic Auth; access gated by AdminConstraint + Admin::ApplicationController
-    MissionControl::Jobs.base_controller_class = "Admin::ApplicationController"
+    # Mission Control Jobs — disable built-in HTTP Basic Auth; access gated by AdminConstraint in routes
+    MissionControl::Jobs.base_controller_class = "ActionController::Base"
     config.mission_control.jobs.http_basic_auth_enabled = false
 
     # Configuration for the application, engines, and railties goes here.

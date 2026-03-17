@@ -256,16 +256,18 @@ class User < ApplicationRecord
   end
 
   def self.airtable_sync_table_id
-    "tblV14N3tTuO9VhlH"
+    "tblxIZLHdihXkmW86"
   end
 
   def self.airtable_sync_sync_id
-    "KWs8kDOV"
+    "M1Rx186e"
   end
 
   def self.airtable_sync_field_mappings
     {
+      "ID" => :id,
       "Email" => :email,
+      "Display Name" => :display_name,
       "Country" => ->(u) { u.latest_locatable_visit&.country },
       "Created At" => ->(u) { u.created_at&.iso8601 },
       "Email Verified" => ->(u) { !u.trial? }
