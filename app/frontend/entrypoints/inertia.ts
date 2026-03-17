@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { renderApp } from '@inertiaui/modal-react'
 import * as Sentry from '@sentry/react'
 import DefaultLayout from '../layouts/DefaultLayout'
+import { notify } from '../lib/notifications'
 import type { ReactNode } from 'react'
 
 Sentry.init({
@@ -17,6 +18,7 @@ Sentry.init({
 
 router.on('exception', (event) => {
   Sentry.captureException(event.detail.exception)
+  notify('alert', 'A network error occurred. Please check your connection and try again.')
 })
 
 router.on('navigate', (event) => {
