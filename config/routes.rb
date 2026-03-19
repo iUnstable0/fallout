@@ -118,6 +118,7 @@ Rails.application.routes.draw do
 
   constraints Constraints::AdminConstraint.new do
     mount MissionControl::Jobs::Engine, at: "/jobs"
+    mount Flipper::UI.app(Flipper), at: "/flipper" # Feature flag dashboard — admin-only
 
     namespace :admin do
       resources :projects, only: [ :index, :show ]

@@ -38,6 +38,10 @@ class ApplicationController < ActionController::Base
   inertia_share sign_out_path: -> { signout_path }
   inertia_share trial_session_path: -> { trial_session_path }
   inertia_share rsvp_path: -> { rsvp_path }
+  inertia_share features: -> { # Feature flags for the frontend
+    next {} unless current_user && !current_user.trial?
+    { collaborators: Flipper.enabled?(:collaborators, current_user) }
+  }
   inertia_share has_unread_mail: -> { # Drives the envelope badge on the path page
     next false unless current_user && !current_user.trial?
     MailMessage.visible_to(current_user)
@@ -65,6 +69,11 @@ class ApplicationController < ActionController::Base
       ahoy.visit.update(user_id: current_user.id)
     end
   end
+
+  def collaborators_enabled?
+    current_user && Flipper.enabled?(:collaborators, current_user)
+  end
+  helper_method :collaborators_enabled? # Available in views/Inertia props
 
   def user_not_authorized
     flash[:alert] = "You are not authorized to perform this action."

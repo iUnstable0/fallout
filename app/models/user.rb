@@ -32,6 +32,7 @@
 class User < ApplicationRecord
   include Discardable
   include PgSearch::Model
+  include Flipper::Identifier # Enables per-user feature flags via Flipper
 
   has_paper_trail
 

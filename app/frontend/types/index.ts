@@ -13,6 +13,10 @@ export interface User {
 
 export type FlashData = Record<string, string>
 
+export interface Features {
+  collaborators?: boolean
+}
+
 export interface SharedProps {
   auth: { user: User | null }
   flash: FlashData
