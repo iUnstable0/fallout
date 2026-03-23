@@ -45,6 +45,24 @@ class Project < ApplicationRecord
 
   scope :listed, -> { where(is_unlisted: false) }
 
+  def self.airtable_sync_table_id
+    "tblrwWzDwN6V4avNP"
+  end
+
+  def self.airtable_sync_sync_id
+    "I36OalE9"
+  end
+
+  def self.airtable_sync_field_mappings
+    {
+      "ID" => :id,
+      "Name" => :name,
+      "Description" => :description,
+      "Repo Link" => :repo_link,
+      "Created At" => ->(p) { p.created_at&.iso8601 }
+    }
+  end
+
   def time_logged
     lapse = LapseTimelapse
       .joins(recording: :journal_entry)
