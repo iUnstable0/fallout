@@ -7,7 +7,7 @@ class LookoutSessionsController < ApplicationController
 
     session_data = LookoutService.create_session(metadata: { user_id: current_user.id })
     unless session_data
-      redirect_back fallback_location: new_journal_entry_path, alert: "Failed to create lookout session"
+      redirect_to path_path, alert: "Failed to create lookout session"
       return
     end
 
@@ -22,16 +22,21 @@ class LookoutSessionsController < ApplicationController
     token = params[:token]
 
     unless current_user.pending_lookout_tokens.include?(token)
-      redirect_to new_journal_entry_path, alert: "Session not found"
+      redirect_to path_path, alert: "Session not found"
       return
     end
 
     session_data = LookoutService.get_session(token)
 
+    unless session_data
+      redirect_to path_path, alert: "Invalid recording session"
+      return
+    end
+
     render inertia: "lookout_sessions/show", props: {
       lookout_session: {
         token: token,
-        status: session_data&.dig("status") || "pending"
+        status: session_data.dig("status") || "pending"
       },
       lookout_api_url: LookoutService.host,
       return_to: params[:return_to]

@@ -556,6 +556,14 @@ function DesktopModeUI({
           then come back here when you're done.
         </p>
         <a
+          href="https://lookout.hackclub.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-dark-brown text-sm underline hover:no-underline"
+        >
+          Download the Lookout desktop app
+        </a>
+        <a
           href={deepLink}
           className="py-2 px-6 border-2 font-bold uppercase cursor-pointer bg-brown text-light-brown border-dark-brown text-sm mt-2"
         >
