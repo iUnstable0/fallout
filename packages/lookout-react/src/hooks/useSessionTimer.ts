@@ -16,13 +16,22 @@ export function useSessionTimer(
   const lastSyncRef = useRef(Date.now());
   // Base value the RAF tick counts from. Ratchets up so display never jumps backward.
   const baseRef = useRef(serverTrackedSeconds);
-  useEffect(() => {
-    // Compute where the display is right now (base + elapsed since last sync).
-    const currentDisplay = baseRef.current + Math.floor((Date.now() - lastSyncRef.current) / 1000);
 
-    // Always ratchet up: display should never be behind the server value.
-    // display ≥ server is the invariant — the user earned that time.
-    const newBase = Math.max(currentDisplay, serverTrackedSeconds);
+  // Effect 1: Sync baseRef with server value.
+  // Normally ratchets forward (never backward) for smooth display.
+  // But if the display has drifted more than 3 minutes ahead of the server
+  // (e.g. captures were failing while the timer kept interpolating),
+  // snap back to the server value to correct the drift.
+  const DRIFT_CORRECTION_THRESHOLD = 180; // 3 minutes
+  useEffect(() => {
+    const drift = baseRef.current - serverTrackedSeconds;
+    let newBase: number;
+    if (drift > DRIFT_CORRECTION_THRESHOLD) {
+      // Display is way ahead of reality — snap to server value
+      newBase = serverTrackedSeconds;
+    } else {
+      newBase = Math.max(baseRef.current, serverTrackedSeconds);
+    }
     if (newBase !== baseRef.current) {
       baseRef.current = newBase;
       setDisplaySeconds(newBase);
@@ -30,8 +39,15 @@ export function useSessionTimer(
     }
   }, [serverTrackedSeconds]);
 
+  // Effect 2: RAF-driven display interpolation.
+  // On activation: reset time anchor so pause duration isn't counted.
+  // On deactivation (cleanup): snapshot base+elapsed into baseRef to preserve
+  // the display value and prevent backward jumps on resume.
   useEffect(() => {
     if (!isActive) return;
+
+    lastSyncRef.current = Date.now();
+
     let raf: number;
     let lastRenderedSecond = -1;
     const tick = () => {
@@ -43,7 +59,11 @@ export function useSessionTimer(
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      baseRef.current += Math.floor((Date.now() - lastSyncRef.current) / 1000);
+      lastSyncRef.current = Date.now();
+    };
   }, [isActive, serverTrackedSeconds]);
 
   return displaySeconds;

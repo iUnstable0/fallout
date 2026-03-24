@@ -49,6 +49,7 @@ export function useLookout(): { state: LookoutState; actions: LookoutActions } {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const capturingRef = useRef(false);
   const prevStatusRef = useRef<RecorderStatus>(session.status);
+  const intentionalPauseRef = useRef(false);
 
   // Sync best tracked seconds to session
   useEffect(() => {
@@ -117,6 +118,7 @@ export function useLookout(): { state: LookoutState; actions: LookoutActions } {
     wasSharingRef.current = capture.isSharing;
 
     if (!wasSharing && capture.isSharing && session.status === "paused") {
+      intentionalPauseRef.current = false;
       session.resume().then(() => {
         callbacksRef.current.onResume?.();
       }).catch(() => {});
@@ -142,6 +144,24 @@ export function useLookout(): { state: LookoutState; actions: LookoutActions } {
       session.pause().catch(() => {});
     }
   }, [capture.isSharing, session.status, session.pause]);
+
+  // Sync session status when uploader detects a 409 conflict
+  useEffect(() => {
+    if (uploader.sessionConflict) {
+      session.syncStatus().then(() => uploader.resetConflict());
+    }
+  }, [uploader.sessionConflict, session.syncStatus, uploader.resetConflict]);
+
+  // Auto-resume when server paused the session while we're still sharing
+  // (e.g., stale lastScreenshotAt triggered the cron auto-pause).
+  // Intentional user pauses are excluded via intentionalPauseRef.
+  useEffect(() => {
+    if (capture.isSharing && session.status === "paused" && !intentionalPauseRef.current) {
+      session.resume().then(() => {
+        callbacksRef.current.onResume?.();
+      }).catch(() => {});
+    }
+  }, [capture.isSharing, session.status, session.resume]);
 
   // Auto-start
   useEffect(() => {
@@ -185,6 +205,7 @@ export function useLookout(): { state: LookoutState; actions: LookoutActions } {
   }, [capture.stopSharing]);
 
   const pause = useCallback(async () => {
+    intentionalPauseRef.current = true;
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -195,6 +216,7 @@ export function useLookout(): { state: LookoutState; actions: LookoutActions } {
   }, [session.pause, session.totalActiveSeconds]);
 
   const resume = useCallback(async () => {
+    intentionalPauseRef.current = false;
     await session.resume();
     callbacksRef.current.onResume?.();
   }, [session.resume]);

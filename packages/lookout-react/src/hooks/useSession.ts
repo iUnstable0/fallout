@@ -196,6 +196,7 @@ export function useSession() {
     resume,
     stop,
     reload: loadSession,
+    syncStatus,
     updateTrackedSeconds,
     setError,
   };

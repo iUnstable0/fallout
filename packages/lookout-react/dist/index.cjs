@@ -495,6 +495,7 @@ async function retry(fn, maxRetries, delays) {
     try {
       return await fn();
     } catch (err) {
+      if (err instanceof HttpError && err.status === 409) throw err;
       if (i === maxRetries - 1) throw err;
       await new Promise((r) => setTimeout(r, delays[i] ?? delays[delays.length - 1]));
     }
@@ -512,9 +513,11 @@ function useUploader() {
   const [trackedSeconds, setTrackedSeconds] = react.useState(0);
   const [lastScreenshotUrl, setLastScreenshotUrl] = react.useState(null);
   const [lastError, setLastError] = react.useState(null);
+  const [sessionConflict, setSessionConflict] = react.useState(false);
   const nextExpectedAtRef = react.useRef(null);
   const bufferRef = react.useRef([]);
   const processingRef = react.useRef(false);
+  const resetConflict = react.useCallback(() => setSessionConflict(false), []);
   const processQueue = react.useCallback(async () => {
     if (processingRef.current) return;
     processingRef.current = true;
@@ -559,6 +562,15 @@ function useUploader() {
         setLastError(msg);
         setUploads((s) => ({ ...s, failed: s.failed + 1 }));
         config.callbacks.onUploadFailure?.(err instanceof Error ? err : new Error(msg));
+        if (err instanceof HttpError && err.status === 409) {
+          setSessionConflict(true);
+          const remaining = bufferRef.current.length;
+          if (remaining > 0) {
+            bufferRef.current.length = 0;
+            setUploads((s) => ({ ...s, pending: 0, failed: s.failed + remaining }));
+          }
+          break;
+        }
       }
     }
     processingRef.current = false;
@@ -581,7 +593,9 @@ function useUploader() {
     trackedSeconds,
     lastScreenshotUrl,
     nextExpectedAt: nextExpectedAtRef.current,
-    lastError
+    lastError,
+    sessionConflict,
+    resetConflict
   };
 }
 function useSession() {
@@ -750,6 +764,7 @@ function useSession() {
     resume,
     stop,
     reload: loadSession,
+    syncStatus,
     updateTrackedSeconds,
     setError
   };
@@ -758,9 +773,15 @@ function useSessionTimer(serverTrackedSeconds, isActive) {
   const [displaySeconds, setDisplaySeconds] = react.useState(serverTrackedSeconds);
   const lastSyncRef = react.useRef(Date.now());
   const baseRef = react.useRef(serverTrackedSeconds);
+  const DRIFT_CORRECTION_THRESHOLD = 180;
   react.useEffect(() => {
-    const currentDisplay = baseRef.current + Math.floor((Date.now() - lastSyncRef.current) / 1e3);
-    const newBase = Math.max(currentDisplay, serverTrackedSeconds);
+    const drift = baseRef.current - serverTrackedSeconds;
+    let newBase;
+    if (drift > DRIFT_CORRECTION_THRESHOLD) {
+      newBase = serverTrackedSeconds;
+    } else {
+      newBase = Math.max(baseRef.current, serverTrackedSeconds);
+    }
     if (newBase !== baseRef.current) {
       baseRef.current = newBase;
       setDisplaySeconds(newBase);
@@ -769,6 +790,7 @@ function useSessionTimer(serverTrackedSeconds, isActive) {
   }, [serverTrackedSeconds]);
   react.useEffect(() => {
     if (!isActive) return;
+    lastSyncRef.current = Date.now();
     let raf;
     let lastRenderedSecond = -1;
     const tick = () => {
@@ -780,7 +802,11 @@ function useSessionTimer(serverTrackedSeconds, isActive) {
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      baseRef.current += Math.floor((Date.now() - lastSyncRef.current) / 1e3);
+      lastSyncRef.current = Date.now();
+    };
   }, [isActive, serverTrackedSeconds]);
   return displaySeconds;
 }
@@ -827,6 +853,7 @@ function useLookout() {
   const intervalRef = react.useRef(null);
   const capturingRef = react.useRef(false);
   const prevStatusRef = react.useRef(session.status);
+  const intentionalPauseRef = react.useRef(false);
   react.useEffect(() => {
     if (bestTrackedSeconds > session.trackedSeconds) {
       session.updateTrackedSeconds(bestTrackedSeconds);
@@ -875,6 +902,7 @@ function useLookout() {
     const wasSharing = wasSharingRef.current;
     wasSharingRef.current = capture.isSharing;
     if (!wasSharing && capture.isSharing && session.status === "paused") {
+      intentionalPauseRef.current = false;
       session.resume().then(() => {
         callbacksRef.current.onResume?.();
       }).catch(() => {
@@ -895,6 +923,19 @@ function useLookout() {
       });
     }
   }, [capture.isSharing, session.status, session.pause]);
+  react.useEffect(() => {
+    if (uploader.sessionConflict) {
+      session.syncStatus().then(() => uploader.resetConflict());
+    }
+  }, [uploader.sessionConflict, session.syncStatus, uploader.resetConflict]);
+  react.useEffect(() => {
+    if (capture.isSharing && session.status === "paused" && !intentionalPauseRef.current) {
+      session.resume().then(() => {
+        callbacksRef.current.onResume?.();
+      }).catch(() => {
+      });
+    }
+  }, [capture.isSharing, session.status, session.resume]);
   react.useEffect(() => {
     if (config.autoStart && !capture.isSharing && (session.status === "pending" || session.status === "active")) {
       capture.startSharing().catch(() => {
@@ -925,6 +966,7 @@ function useLookout() {
     callbacksRef.current.onShareStop?.();
   }, [capture.stopSharing]);
   const pause = react.useCallback(async () => {
+    intentionalPauseRef.current = true;
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -934,6 +976,7 @@ function useLookout() {
     callbacksRef.current.onPause?.({ totalActiveSeconds: session.totalActiveSeconds });
   }, [session.pause, session.totalActiveSeconds]);
   const resume = react.useCallback(async () => {
+    intentionalPauseRef.current = false;
     await session.resume();
     callbacksRef.current.onResume?.();
   }, [session.resume]);

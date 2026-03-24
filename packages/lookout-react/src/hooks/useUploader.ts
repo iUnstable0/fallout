@@ -1,5 +1,6 @@
 import { useRef, useCallback, useState } from "react";
 import { useLookoutContext } from "../LookoutProvider.js";
+import { HttpError } from "../api/client.js";
 import type { CaptureResult, UploadState } from "../types.js";
 
 async function retry<T>(
@@ -11,6 +12,7 @@ async function retry<T>(
     try {
       return await fn();
     } catch (err) {
+      if (err instanceof HttpError && err.status === 409) throw err;
       if (i === maxRetries - 1) throw err;
       await new Promise((r) => setTimeout(r, delays[i] ?? delays[delays.length - 1]));
     }
@@ -31,6 +33,10 @@ export interface UploaderResult {
   nextExpectedAt: string | null;
   /** Last upload error message, if any. */
   lastError: string | null;
+  /** True when a 409 conflict was received (session paused server-side). */
+  sessionConflict: boolean;
+  /** Clear the sessionConflict flag after handling. */
+  resetConflict: () => void;
 }
 
 export function useUploader(): UploaderResult {
@@ -45,9 +51,12 @@ export function useUploader(): UploaderResult {
   const [trackedSeconds, setTrackedSeconds] = useState(0);
   const [lastScreenshotUrl, setLastScreenshotUrl] = useState<string | null>(null);
   const [lastError, setLastError] = useState<string | null>(null);
+  const [sessionConflict, setSessionConflict] = useState(false);
   const nextExpectedAtRef = useRef<string | null>(null);
   const bufferRef = useRef<CaptureResult[]>([]);
   const processingRef = useRef(false);
+
+  const resetConflict = useCallback(() => setSessionConflict(false), []);
 
   const processQueue = useCallback(async () => {
     if (processingRef.current) return;
@@ -99,6 +108,18 @@ export function useUploader(): UploaderResult {
         setLastError(msg);
         setUploads((s) => ({ ...s, failed: s.failed + 1 }));
         config.callbacks.onUploadFailure?.(err instanceof Error ? err : new Error(msg));
+
+        // On 409 (session paused server-side), signal conflict and drain
+        // remaining buffer — they'll all 409 too.
+        if (err instanceof HttpError && err.status === 409) {
+          setSessionConflict(true);
+          const remaining = bufferRef.current.length;
+          if (remaining > 0) {
+            bufferRef.current.length = 0;
+            setUploads((s) => ({ ...s, pending: 0, failed: s.failed + remaining }));
+          }
+          break;
+        }
       }
     }
 
@@ -125,5 +146,7 @@ export function useUploader(): UploaderResult {
     lastScreenshotUrl,
     nextExpectedAt: nextExpectedAtRef.current,
     lastError,
+    sessionConflict,
+    resetConflict,
   };
 }

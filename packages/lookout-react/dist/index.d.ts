@@ -359,6 +359,10 @@ interface UploaderResult {
     nextExpectedAt: string | null;
     /** Last upload error message, if any. */
     lastError: string | null;
+    /** True when a 409 conflict was received (session paused server-side). */
+    sessionConflict: boolean;
+    /** Clear the sessionConflict flag after handling. */
+    resetConflict: () => void;
 }
 declare function useUploader(): UploaderResult;
 
@@ -367,6 +371,7 @@ declare function useSession(): {
     resume: () => Promise<void>;
     stop: (name?: string) => Promise<void>;
     reload: () => Promise<void>;
+    syncStatus: () => Promise<void>;
     updateTrackedSeconds: (seconds: number) => void;
     setError: (error: string | null) => void;
     status: RecorderStatus;
