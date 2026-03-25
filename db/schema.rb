@@ -96,6 +96,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_185701) do
     t.index ["record_identifier"], name: "index_airtable_syncs_on_record_identifier", unique: true
   end
 
+  create_table "collaboration_invites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "invitee_id", null: false
+    t.bigint "inviter_id", null: false
+    t.bigint "project_id", null: false
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["invitee_id"], name: "index_collaboration_invites_on_invitee_id"
+    t.index ["inviter_id"], name: "index_collaboration_invites_on_inviter_id"
+    t.index ["project_id", "invitee_id", "status"], name: "index_collaboration_invites_on_project_invitee_status"
+    t.index ["project_id"], name: "index_collaboration_invites_on_project_id"
+  end
+
+  create_table "collaborators", force: :cascade do |t|
+    t.bigint "collaboratable_id", null: false
+    t.string "collaboratable_type", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["collaboratable_type", "collaboratable_id"], name: "index_collaborators_on_collaboratable"
+    t.index ["user_id", "collaboratable_type", "collaboratable_id"], name: "index_collaborators_uniqueness", unique: true
+    t.index ["user_id"], name: "index_collaborators_on_user_id"
+  end
+
   create_table "collapse_timelapses", force: :cascade do |t|
     t.string "collapse_session_id", null: false
     t.datetime "created_at", null: false
@@ -458,6 +482,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_23_185701) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "collaboration_invites", "projects"
+  add_foreign_key "collaboration_invites", "users", column: "invitee_id"
+  add_foreign_key "collaboration_invites", "users", column: "inviter_id"
+  add_foreign_key "collaborators", "users"
   add_foreign_key "collapse_timelapses", "users"
   add_foreign_key "critters", "journal_entries"
   add_foreign_key "critters", "users"

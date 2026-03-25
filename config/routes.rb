@@ -161,6 +161,14 @@ Rails.application.routes.draw do
   resources :projects do
     get "onboarding", on: :collection # Project onboarding modal accessed from path page
     resources :journal_entries, only: [ :new, :create ]
+    resources :collaboration_invites, only: [ :create, :destroy ], module: :projects # Send and revoke project collaboration invites
+  end
+
+  resources :collaboration_invites, only: [ :show ] do
+    member do
+      post :accept # Invitee accepts the collaboration invite
+      post :decline # Invitee declines the collaboration invite
+    end
   end
 
   # Top-level journal entry point — redirects to project-scoped route or shows project selection

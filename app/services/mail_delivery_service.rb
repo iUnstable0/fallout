@@ -26,4 +26,14 @@ class MailDeliveryService
       )
     end
   end
+
+  def self.collaboration_invite_sent(invite)
+    MailMessage.create!(
+      summary: "#{invite.inviter.display_name} invited you to collaborate on #{invite.project.name}",
+      user: invite.invitee,
+      source: invite,
+      action_url: "/collaboration_invites/#{invite.id}",
+      dismissable: false # User must accept or decline — cannot silently dismiss
+    )
+  end
 end

@@ -32,17 +32,20 @@ class JournalEntry < ApplicationRecord
   has_many :lapse_timelapses, through: :recordings, source: :recordable, source_type: "LapseTimelapse"
   has_many :you_tube_videos, through: :recordings, source: :recordable, source_type: "YouTubeVideo"
   has_one :critter, dependent: :nullify
+  has_many :collaborators, as: :collaboratable, dependent: :destroy
+  has_many :collaborator_users, through: :collaborators, source: :user
   has_many_attached :images
 
-  validate :user_must_own_project
+  validate :user_must_own_or_collaborate_on_project
   validate :validate_image_content_types
   validate :validate_image_sizes
   validate :validate_image_count
 
   private
 
-  def user_must_own_project
-    errors.add(:user, "must own the project") if project && user && project.user_id != user_id
+  def user_must_own_or_collaborate_on_project
+    return unless project && user
+    errors.add(:user, "must own or collaborate on the project") unless project.owner_or_collaborator?(user)
   end
 
   def validate_image_content_types

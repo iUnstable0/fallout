@@ -21,6 +21,7 @@ export interface Features {
 export interface SharedProps {
   auth: { user: User | null }
   flash: FlashData
+  features: Features
   sign_in_path: string
   sign_out_path: string
   trial_session_path: string
@@ -60,6 +61,30 @@ export interface PagyProps {
   prev: number | null
 }
 
+export interface CollaboratorInfo {
+  id: number
+  user_id: number
+  display_name: string
+  avatar: string
+}
+
+export interface PendingInvite {
+  id: number
+  invitee_display_name: string
+  invitee_avatar: string
+  created_at: string
+}
+
+export interface InviteDetail {
+  id: number
+  status: string
+  project_name: string
+  project_id: number
+  inviter_display_name: string
+  inviter_avatar: string
+  created_at: string
+}
+
 export interface ProjectCard {
   id: number
   name: string
@@ -70,6 +95,7 @@ export interface ProjectCard {
   journal_entries_count: number
   time_logged: number
   recordings_count: number
+  is_collaborator: boolean
 }
 
 export interface ProjectDetail {
@@ -90,6 +116,8 @@ export interface JournalEntryCard {
   images: string[]
   recordings_count: number
   created_at: string
+  author_display_name: string
+  collaborators: { display_name: string; avatar: string }[]
 }
 
 export interface ProjectForm {

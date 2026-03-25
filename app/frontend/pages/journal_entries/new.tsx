@@ -10,7 +10,8 @@ import type { SharedProps } from '@/types'
 const MIN_IMAGES = 1
 const MIN_CHARS = 100
 
-type Project = { id: number; name: string }
+type PotentialCollaborator = { id: number; display_name: string; avatar: string }
+type Project = { id: number; name: string; potential_collaborators: PotentialCollaborator[] }
 
 type Timelapse = {
   id: string
@@ -119,6 +120,7 @@ function NewJournal({
   const [youtubeLoading, setYoutubeLoading] = useState(false)
   const [youtubeError, setYoutubeError] = useState<string | null>(null)
   const [blobSignedIds, setBlobSignedIds] = useState<string[]>([])
+  const [selectedCollaborators, setSelectedCollaborators] = useState<Set<number>>(new Set())
   const [submitting, setSubmitting] = useState(false)
   const [draftStatus, setDraftStatus] = useState<string | null>(null)
   const modalRef = useRef<{ close: () => void }>(null)
@@ -143,6 +145,7 @@ function NewJournal({
         setMarkdown(localStorage.getItem(draftKey) ?? '')
       } catch {}
       setDraftStatus(null)
+      setSelectedCollaborators(new Set())
     }
     prevDraftKey.current = draftKey
   }, [draftKey])
@@ -251,6 +254,7 @@ function NewJournal({
       timelapse_ids: Array.from(selectedTimelapses),
       youtube_video_ids: youtubeVideos.map((v) => v.id),
       lookout_tokens: Array.from(selectedLookoutTokens),
+      collaborator_ids: Array.from(selectedCollaborators),
       content: markdown,
       images: blobSignedIds,
     }
@@ -335,6 +339,35 @@ function NewJournal({
             </div>
           )}
         </div>
+
+        {selectedProject && selectedProject.potential_collaborators.length > 0 && (
+          <div className="mt-4">
+            <p className="italic text-sm mb-1.5">Collaborators on this entry</p>
+            <div className="flex flex-wrap gap-2">
+              {selectedProject.potential_collaborators.map((c) => {
+                const selected = selectedCollaborators.has(c.id)
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedCollaborators((prev) => {
+                        const next = new Set(prev)
+                        if (next.has(c.id)) next.delete(c.id)
+                        else next.add(c.id)
+                        return next
+                      })
+                    }}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm cursor-pointer transition-colors ${selected ? 'bg-dark-brown text-light-brown' : 'bg-brown text-light-brown hover:bg-dark-brown'}`}
+                  >
+                    <img src={c.avatar} alt="" className="w-5 h-5 rounded-full" />
+                    {c.display_name}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         <p className="font-bold italic text-lg mt-6 mb-2">Write about what you did</p>
         <div className={`relative flex-1 min-h-0 flex flex-col ${!selectedProject ? 'pointer-events-none' : ''}`}>

@@ -37,6 +37,19 @@ class Project < ApplicationRecord
   has_many :ships, dependent: :destroy
   has_many :journal_entries, dependent: :destroy
   has_many :kept_journal_entries, -> { kept }, class_name: "JournalEntry"
+  has_many :collaborators, as: :collaboratable, dependent: :destroy
+  has_many :collaborator_users, through: :collaborators, source: :user
+  has_many :collaboration_invites, dependent: :destroy
+
+  def collaborator?(user)
+    return false unless user
+    collaborator_users.include?(user)
+  end
+
+  def owner_or_collaborator?(user)
+    return false unless user
+    user_id == user.id || collaborator?(user)
+  end
 
   validates :name, presence: true
   validates :is_unlisted, inclusion: { in: [ true, false ] }

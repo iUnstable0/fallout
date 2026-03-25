@@ -80,7 +80,14 @@ export default function ProjectsIndex({
                   </div>
                 )}
                 <div className="pt-3 pb-2 px-2">
-                  <p className="font-bold text-white truncate text-xl">{project.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-white truncate text-xl">{project.name}</p>
+                    {project.is_collaborator && (
+                      <span className="text-[10px] uppercase font-bold bg-dark-brown text-light-brown px-1.5 py-0.5 rounded-full shrink-0">
+                        Collaborator
+                      </span>
+                    )}
+                  </div>
                   {project.description && (
                     <p className="text-xs text-light-brown mt-1 line-clamp-2">{project.description}</p>
                   )}

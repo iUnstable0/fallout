@@ -4,7 +4,12 @@ class JournalEntriesController < ApplicationController
   skip_after_action :verify_policy_scoped # No index action — blanket skip required (Rails 8.1 callback validation)
 
   def new
-    projects = current_user.projects.kept
+    projects = Project.kept.where(user: current_user)
+    if collaborators_enabled?
+      collaborated_project_ids = Collaborator.where(user: current_user, collaboratable_type: "Project").select(:collaboratable_id)
+      projects = projects.or(Project.kept.where(id: collaborated_project_ids))
+    end
+    projects = projects.includes(:collaborator_users, :user)
 
     if params[:project_id]
       @project = projects.find(params[:project_id])
@@ -16,7 +21,7 @@ class JournalEntriesController < ApplicationController
     lapse_connected = current_user.lapse_token.present? || ENV["LAPSE_PROGRAM_KEY"].present?
 
     render inertia: "journal_entries/new", props: {
-      projects: projects.map { |p| { id: p.id, name: p.name } },
+      projects: projects.map { |p| serialize_project_for_journal(p) },
       selected_project_id: @project&.id,
       lapse_connected: lapse_connected,
       is_modal: request.headers["X-InertiaUI-Modal"].present?,
@@ -58,13 +63,14 @@ class JournalEntriesController < ApplicationController
   end
 
   def create
-    @project = current_user.projects.kept.find(params[:project_id])
+    @project = Project.kept.find(params[:project_id]) # Pundit enforces access via JournalEntryPolicy#create?
     @journal_entry = @project.journal_entries.build(user: current_user, content: params[:content])
     authorize @journal_entry
 
     timelapse_ids = Array(params[:timelapse_ids]).map(&:to_s).uniq
     youtube_video_ids = Array(params[:youtube_video_ids]).map(&:to_i).uniq
     lookout_tokens = Array(params[:lookout_tokens]).map(&:to_s).uniq
+    collaborator_ids = Array(params[:collaborator_ids]).map(&:to_i).uniq
 
     ActiveRecord::Base.transaction do
       @journal_entry.save!
@@ -91,6 +97,16 @@ class JournalEntriesController < ApplicationController
 
         current_user.update!(pending_lookout_tokens: current_user.pending_lookout_tokens - [ token ])
       end
+
+      # Add journal entry collaborators — only project participants (owner + collaborators) minus the creator
+      if collaborators_enabled?
+        collaborator_ids.each do |uid|
+          collab_user = User.verified.kept.find_by(id: uid)
+          next unless collab_user && collab_user.id != current_user.id
+          next unless @project.owner_or_collaborator?(collab_user)
+          @journal_entry.collaborators.create!(user: collab_user)
+        end
+      end
     end
 
     critter = maybe_award_critter(@journal_entry)
@@ -115,5 +131,17 @@ class JournalEntriesController < ApplicationController
   # Strip owner PII and internal fields before exposing to frontend
   def safe_timelapse_attrs(timelapse)
     timelapse.slice("id", "name", "thumbnailUrl", "playbackUrl", "duration", "createdAt")
+  end
+
+  def serialize_project_for_journal(project)
+    potential = if collaborators_enabled?
+      ([ project.user ] + project.collaborator_users.to_a)
+        .reject { |u| u.id == current_user.id }
+        .map { |u| { id: u.id, display_name: u.display_name, avatar: u.avatar } }
+    else
+      []
+    end
+
+    { id: project.id, name: project.name, potential_collaborators: potential }
   end
 end

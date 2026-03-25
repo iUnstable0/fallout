@@ -12,7 +12,11 @@ class ProjectsController < ApplicationController
 
   def index
     scope = policy_scope(Project).where(user: current_user)
-      .includes(kept_journal_entries: [ :recordings, { images_attachments: :blob } ])
+    if collaborators_enabled?
+      collaborated_ids = Collaborator.where(user: current_user, collaboratable_type: "Project").select(:collaboratable_id)
+      scope = scope.or(Project.kept.where(id: collaborated_ids))
+    end
+    scope = scope.includes(kept_journal_entries: [ :recordings, { images_attachments: :blob } ])
     scope = scope.search(params[:query]) if params[:query].present?
     @pagy, @projects = pagy(scope.order(created_at: :desc))
 
@@ -27,14 +31,27 @@ class ProjectsController < ApplicationController
   def show
     authorize @project
 
-    journal_entries = @project.journal_entries.kept.includes(:recordings, images_attachments: :blob).order(created_at: :desc)
+    journal_entries = @project.journal_entries.kept
+      .includes(:user, :recordings, :collaborator_users, images_attachments: :blob)
+      .order(created_at: :desc)
+
+    collab_enabled = collaborators_enabled?
 
     render inertia: {
       project: serialize_project_detail(@project),
       journal_entries: journal_entries.map { |je| serialize_journal_entry_card(je) },
+      collaborators: collab_enabled ? @project.collaborators.includes(:user).map { |c|
+        { id: c.id, user_id: c.user.id, display_name: c.user.display_name, avatar: c.user.avatar }
+      } : [],
+      pending_invites: collab_enabled && policy(@project).manage_collaborators? ?
+        @project.collaboration_invites.pending.includes(:invitee).map { |i|
+          { id: i.id, invitee_display_name: i.invitee.display_name, invitee_avatar: i.invitee.avatar, created_at: i.created_at.strftime("%B %d, %Y") }
+        } : [],
       can: {
         update: policy(@project).update?,
-        destroy: policy(@project).destroy?
+        destroy: policy(@project).destroy?,
+        manage_collaborators: collab_enabled && policy(@project).manage_collaborators?,
+        create_journal_entry: JournalEntryPolicy.new(current_user, @project.journal_entries.build(user: current_user)).create?
       },
       is_modal: request.headers["X-InertiaUI-Modal"].present?
     }
@@ -123,7 +140,8 @@ class ProjectsController < ApplicationController
       cover_image_url: cover_entry&.images&.first&.then { |img| url_for(img) },
       journal_entries_count: kept_entries.size,
       time_logged: project.time_logged,
-      recordings_count: kept_entries.sum { |je| je.recordings.size }
+      recordings_count: kept_entries.sum { |je| je.recordings.size },
+      is_collaborator: project.user_id != current_user.id # True when viewing a project you collaborate on (not own)
     }
   end
 
@@ -147,7 +165,9 @@ class ProjectsController < ApplicationController
       content_html: helpers.render_user_markdown(journal_entry.content.to_s),
       images: journal_entry.images.map { |img| url_for(img) },
       recordings_count: journal_entry.recordings.size,
-      created_at: journal_entry.created_at.strftime("%B %d, %Y")
+      created_at: journal_entry.created_at.strftime("%B %d, %Y"),
+      author_display_name: journal_entry.user.display_name,
+      collaborators: journal_entry.collaborator_users.map { |u| { display_name: u.display_name, avatar: u.avatar } }
     }
   end
 end
