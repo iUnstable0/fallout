@@ -1,7 +1,7 @@
 class Ahoy::Store < Ahoy::DatabaseStore
   def track_visit(data)
     data[:ip] = request.headers["CF-Connecting-IP"] || request.remote_ip
-    data[:utm_source] ||= request.query_parameters["ref"] if request.query_parameters["ref"].present?
+    data[:utm_source] ||= request.query_parameters["ref"] || request.query_parameters["href"]
     super(data)
   end
 end
