@@ -599,14 +599,14 @@ export default function LandingIndex() {
           <section className="px-6 md:px-8 lg:px-18 xl:px-36 2xl:px-54 py-20 bg-beige text-dark-brown text-2xl">
             <div className="w-full bg-white border-2 border-black p-6  rounded-sm">
               <span className="font-semibold text-2xl">Hack Club is recognized by:</span>
-              <ul className="flex gap-4 w-full items-center justify-center py-4 px-4">
-                <li><img src="/landing/logos/gwc.webp" className="h-18 object-contain" alt="Girls Who Code" /></li>
-                <li><img src="/landing/logos/github.webp" className="h-22 object-contain" alt="GitHub" /></li>
-                <li><img src="/landing/logos/mit.webp" className="h-24 object-contain" alt="MIT School of Engineering" /></li>
-                <li><img src="/landing/logos/cac.webp" className="h-16 object-contain" alt="Congressional App Challenge" /></li>
-                <li><img src="/landing/logos/amd.webp" className="h-16 object-contain" alt="AMD" /></li>
+              <ul className="flex gap-2 md:gap-4 w-full items-center justify-center py-6 px-4 flex-wrap lg:flex-nowrap">
+                <li><img src="/landing/logos/gwc.webp" className="h-10 md:h-18 object-contain" alt="Girls Who Code" /></li>
+                <li><img src="/landing/logos/github.webp" className="h-12 md:h-22 object-contain" alt="GitHub" /></li>
+                <li><img src="/landing/logos/mit.webp" className="h-14 md:h-24 object-contain" alt="MIT School of Engineering" /></li>
+                <li><img src="/landing/logos/cac.webp" className="h-10 md:h-16 object-contain" alt="Congressional App Challenge" /></li>
+                <li><img src="/landing/logos/amd.webp" className="h-10 md:h-16 object-contain" alt="AMD" /></li>
               </ul>
-              <span>Upon the completion of 60h, we will issue you a certificate.</span>
+              <span className="text-xl">Upon the completion of 60h, we will issue you a certificate.</span>
             </div>
           </section>
           <section className="px-6 md:px-8 lg:px-18 xl:px-36 2xl:px-54 py-20 bg-beige text-dark-brown">
