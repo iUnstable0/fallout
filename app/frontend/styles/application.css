@@ -475,84 +475,85 @@ textarea:focus {
 
 /* Dark mode for docs pages */
 @media (prefers-color-scheme: dark) {
-  .markdown-content {
+  /* Scoped to .docs-page so dark mode doesn't affect journal preview */
+  .docs-page .markdown-content {
     color: #e8d5c4;
   }
 
-  .markdown-content h1,
-  .markdown-content h2 {
+  .docs-page .markdown-content h1,
+  .docs-page .markdown-content h2 {
     border-bottom-color: rgba(237, 209, 176, 0.15);
   }
 
-  .markdown-content a {
+  .docs-page .markdown-content a {
     color: #6db8e0;
   }
 
-  .markdown-content a:hover {
+  .docs-page .markdown-content a:hover {
     background: rgba(109, 184, 224, 0.1);
   }
 
-  .markdown-content blockquote {
+  .docs-page .markdown-content blockquote {
     background: rgba(237, 209, 176, 0.06);
   }
 
-  .markdown-content code {
+  .docs-page .markdown-content code {
     background-color: rgba(237, 209, 176, 0.1);
     color: #e8d5c4;
   }
 
-  .markdown-content pre {
+  .docs-page .markdown-content pre {
     background-color: rgba(237, 209, 176, 0.08);
     color: #e8d5c4;
   }
 
-  .markdown-content th {
+  .docs-page .markdown-content th {
     border-bottom-color: rgba(237, 209, 176, 0.15);
   }
 
-  .markdown-content table:not(:has(td)) th {
+  .docs-page .markdown-content table:not(:has(td)) th {
     border-bottom: none;
   }
 
-  .markdown-content hr {
+  .docs-page .markdown-content hr {
     border-top-color: rgba(237, 209, 176, 0.15);
   }
 
-  .markdown-content .footnotes {
+  .docs-page .markdown-content .footnotes {
     border-top-color: rgba(237, 209, 176, 0.15);
   }
 
-  .markdown-content aside {
+  .docs-page .markdown-content aside {
     background-color: rgba(237, 209, 176, 0.06);
     color: #e8d5c4;
   }
 
-  .markdown-content .external-image-callout {
+  .docs-page .markdown-content .external-image-callout {
     background-color: rgba(237, 209, 176, 0.06);
     color: #e8d5c4;
   }
 
-  .markdown-content .callout-info {
+  .docs-page .markdown-content .callout-info {
     background-color: rgba(56, 201, 255, 0.12);
   }
 
-  .markdown-content .callout-alert {
+  .docs-page .markdown-content .callout-alert {
     background-color: rgba(255, 235, 173, 0.1);
   }
 
-  .markdown-content .callout-danger {
+  .docs-page .markdown-content .callout-danger {
     background-color: rgba(255, 125, 112, 0.12);
   }
 
-  .markdown-content .callout-success {
+  .docs-page .markdown-content .callout-success {
     background-color: rgba(55, 181, 118, 0.12);
   }
 
-  .markdown-content .checkbox-do {
+  .docs-page .markdown-content .checkbox-do {
     background-color: rgba(55, 181, 118, 0.2);
   }
 
-  .markdown-content .checkbox-dont {
+  .docs-page .markdown-content .checkbox-dont {
     background-color: rgba(255, 125, 112, 0.2);
   }
 
