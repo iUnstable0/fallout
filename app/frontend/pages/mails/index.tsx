@@ -67,10 +67,14 @@ function MailsIndex({ mails, is_modal }: PageProps) {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation()
-                            router.post(`/collaboration_invites/${mail.invite_id}/accept`, {}, {
-                              preserveScroll: true,
-                              onSuccess: () => modal?.reload(),
-                            })
+                            router.post(
+                              `/collaboration_invites/${mail.invite_id}/accept`,
+                              {},
+                              {
+                                preserveScroll: true,
+                                onSuccess: () => modal?.reload(),
+                              },
+                            )
                           }}
                           className="text-sm py-1 px-3"
                         >
@@ -80,10 +84,14 @@ function MailsIndex({ mails, is_modal }: PageProps) {
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation()
-                            router.post(`/collaboration_invites/${mail.invite_id}/decline`, {}, {
-                              preserveScroll: true,
-                              onSuccess: () => modal?.reload(),
-                            })
+                            router.post(
+                              `/collaboration_invites/${mail.invite_id}/decline`,
+                              {},
+                              {
+                                preserveScroll: true,
+                                onSuccess: () => modal?.reload(),
+                              },
+                            )
                           }}
                           className="text-sm py-1 px-3 bg-light-brown text-dark-brown"
                         >

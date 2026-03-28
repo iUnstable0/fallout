@@ -703,45 +703,45 @@ function LookoutTimelapseBrowser({
       {recordings.length === 0 ? (
         <p className="text-dark-brown text-center">No recordings found</p>
       ) : (
-      <div className="grid grid-cols-2 gap-4">
-        {recordings.map((recording) => {
-          const selected = selectedIds.has(recording.token)
-          const date = new Date(recording.created_at).toLocaleDateString('en-CA').replace(/-/g, '/')
-          return (
-            <button
-              key={recording.token}
-              type="button"
-              onClick={() => onToggle(recording.token)}
-              className={`relative text-left rounded p-2 bg-brown transition-all cursor-pointer min-w-0 ${selected ? 'ring-2 ring-dark-brown shadow-lg' : 'opacity-60 hover:opacity-80 hover:ring-1 hover:ring-dark-brown'}`}
-            >
-              {selected && (
-                <div className="absolute top-3 right-3 w-6 h-6 bg-dark-brown rounded-full flex items-center justify-center z-10">
-                  <svg
-                    className="w-4 h-4 text-light-brown"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={3}
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
+        <div className="grid grid-cols-2 gap-4">
+          {recordings.map((recording) => {
+            const selected = selectedIds.has(recording.token)
+            const date = new Date(recording.created_at).toLocaleDateString('en-CA').replace(/-/g, '/')
+            return (
+              <button
+                key={recording.token}
+                type="button"
+                onClick={() => onToggle(recording.token)}
+                className={`relative text-left rounded p-2 bg-brown transition-all cursor-pointer min-w-0 ${selected ? 'ring-2 ring-dark-brown shadow-lg' : 'opacity-60 hover:opacity-80 hover:ring-1 hover:ring-dark-brown'}`}
+              >
+                {selected && (
+                  <div className="absolute top-3 right-3 w-6 h-6 bg-dark-brown rounded-full flex items-center justify-center z-10">
+                    <svg
+                      className="w-4 h-4 text-light-brown"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={3}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </div>
+                )}
+                <div
+                  className="aspect-video rounded overflow-hidden bg-light-brown bg-center bg-contain bg-no-repeat"
+                  style={recording.thumbnail_url ? { backgroundImage: `url(${recording.thumbnail_url})` } : undefined}
+                />
+                <div className="mt-1.5">
+                  <p className="font-bold text-sm truncate text-white">{recording.name || 'Lookout Recording'}</p>
+                  <div className="flex justify-between text-xs text-light-brown">
+                    <span>{formatDuration(recording.duration ?? 0)}</span>
+                    <span>{date}</span>
+                  </div>
                 </div>
-              )}
-              <div
-                className="aspect-video rounded overflow-hidden bg-light-brown bg-center bg-contain bg-no-repeat"
-                style={recording.thumbnail_url ? { backgroundImage: `url(${recording.thumbnail_url})` } : undefined}
-              />
-              <div className="mt-1.5">
-                <p className="font-bold text-sm truncate text-white">{recording.name || 'Lookout Recording'}</p>
-                <div className="flex justify-between text-xs text-light-brown">
-                  <span>{formatDuration(recording.duration ?? 0)}</span>
-                  <span>{date}</span>
-                </div>
-              </div>
-            </button>
-          )
-        })}
-      </div>
+              </button>
+            )
+          })}
+        </div>
       )}
     </div>
   )
@@ -759,11 +759,7 @@ const SKELETON_LOOKOUT: LookoutRecording[] = Array.from({ length: 4 }, (_, i) =>
 function LookoutTimelapseSkeleton() {
   return (
     <div className="animate-pulse">
-      <LookoutTimelapseBrowser
-        recordings={SKELETON_LOOKOUT}
-        selectedIds={new Set()}
-        onToggle={() => {}}
-      />
+      <LookoutTimelapseBrowser recordings={SKELETON_LOOKOUT} selectedIds={new Set()} onToggle={() => {}} />
     </div>
   )
 }
