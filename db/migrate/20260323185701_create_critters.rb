@@ -9,6 +9,6 @@ class CreateCritters < ActiveRecord::Migration[8.1]
       t.timestamps
     end
 
-    add_index :critters, [:user_id, :created_at] # Rolling 12h window eligibility query
+    add_index :critters, [ :user_id, :created_at ] # Rolling 12h window eligibility query
   end
 end

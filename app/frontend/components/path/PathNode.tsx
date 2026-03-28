@@ -105,9 +105,14 @@ export default function PathNode({
       ) : state === 'active' && interactive ? (
         isTrial || readDocsNudge ? (
           <button
-            onClick={() => notify('alert', isTrial
-              ? 'You need to verify your account before continuing!'
-              : 'Check out the docs & resources (backpack icon to the left)')}
+            onClick={() =>
+              notify(
+                'alert',
+                isTrial
+                  ? 'You need to verify your account before continuing!'
+                  : 'Check out the docs & resources (backpack icon to the left)',
+              )
+            }
             className="outline-0"
           >
             {billboardImage}
@@ -133,7 +138,14 @@ export default function PathNode({
   if (!interactive) return content
 
   if (state === 'active') {
-    const tooltipText = readDocsNudge && index !== 0 ? 'Locked' : index === 0 ? 'Start here!' : journalEntryCount === 0 ? 'Here next!' : 'Continue here!'
+    const tooltipText =
+      readDocsNudge && index !== 0
+        ? 'Locked'
+        : index === 0
+          ? 'Start here!'
+          : journalEntryCount === 0
+            ? 'Here next!'
+            : 'Continue here!'
     const showAlways = readDocsNudge ? false : index === 0 ? !modalOpen : activeReady && !modalOpen
     return (
       <Tooltip side="top" gap={12} trackScroll alwaysShow={showAlways} snapWhenOffscreen={snapPosition}>

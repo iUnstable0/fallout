@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { Link, usePage } from '@inertiajs/react'
 import type { SharedProps } from '@/types'
-// @ts-expect-error useModalStack lacks type declarations in this beta package
 import { useModalStack, ModalLink } from '@inertiaui/modal-react'
 import Shop from '@/components/Shop'
 import Projects from '@/components/Projects'
@@ -78,7 +77,7 @@ export default function PathIndex() {
           index={i}
           hasProjects={has_projects}
           journalEntryCount={journal_entry_count}
-          critterVariant={i >= 1 ? critter_variants[i - 1] ?? undefined : undefined}
+          critterVariant={i >= 1 ? (critter_variants[i - 1] ?? undefined) : undefined}
           readDocsNudge={readDocsNudge}
         />
       )),
@@ -117,7 +116,6 @@ export default function PathIndex() {
       <div className="fixed z-20 top-2 left-2 right-2 xs:p-6 flex flex-col gap-2">
         <Header koiBalance={user.koi} avatar={user.avatar} displayName={user.display_name} />
       </div>
-      
 
       <div className="fixed h-full z-10 flex justify-end items-end p-8 w-full pointer-events-none">
         <div className="flex flex-col items-center justify-center sm:justify-end w-full sm:w-fit h-fit space-y-6 pointer-events-auto ">
