@@ -9,7 +9,9 @@ const Deferred = ({ children, data, fallback }) => {
 
   const [loaded, setLoaded] = useState(false)
   const keys = Array.isArray(data) ? data : [data]
-  const modalProps = useModal().props
+  const modal = useModal()
+  // Use navigated content props when in-modal navigation is active
+  const modalProps = modal.navigatedContent ? modal.navigatedContent.props : modal.props
 
   useEffect(() => {
     setLoaded(keys.every((key) => modalProps[key] !== undefined))

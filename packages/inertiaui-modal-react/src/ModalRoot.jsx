@@ -224,7 +224,10 @@ export const ModalStackProvider = ({ children }) => {
     }
 
     reload = (options = {}) => {
-      let keys = Object.keys(this.response.props)
+      // Use navigated content's response when in-modal navigation is active
+      const activeResponse = this.navigatedContent?.response ?? this.response
+
+      let keys = Object.keys(activeResponse.props)
 
       if (options.only) {
         keys = options.only
@@ -234,7 +237,7 @@ export const ModalStackProvider = ({ children }) => {
         keys = except(keys, options.except)
       }
 
-      if (!this.response?.url) {
+      if (!activeResponse?.url) {
         return
       }
 
@@ -244,7 +247,7 @@ export const ModalStackProvider = ({ children }) => {
       options.onStart?.()
 
       Axios({
-        url: this.response.url,
+        url: activeResponse.url,
         method,
         data: method === 'get' ? {} : data,
         params: method === 'get' ? data : {},
@@ -252,8 +255,8 @@ export const ModalStackProvider = ({ children }) => {
           ...(options.headers ?? {}),
           Accept: 'text/html, application/xhtml+xml',
           'X-Inertia': true,
-          'X-Inertia-Partial-Component': this.response.component,
-          'X-Inertia-Version': this.response.version,
+          'X-Inertia-Partial-Component': activeResponse.component,
+          'X-Inertia-Version': activeResponse.version,
           'X-Inertia-Partial-Data': keys.join(','),
           'X-InertiaUI-Modal': generateId(),
           'X-InertiaUI-Modal-Use-Router': 0,
@@ -274,8 +277,10 @@ export const ModalStackProvider = ({ children }) => {
     }
 
     updateProps = (props) => {
-      Object.assign(this.props, props)
-      updateStack((prevStack) => prevStack) // Trigger re-render
+      // When navigated content exists, update its props instead of the original modal props
+      const target = this.navigatedContent ? this.navigatedContent.props : this.props
+      Object.assign(target, props)
+      updateStack((prevStack) => [...prevStack]) // Trigger re-render
     }
 
     navigate = (url, options = {}) => {

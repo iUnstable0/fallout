@@ -105,7 +105,8 @@ class JournalEntriesController < ApplicationController
       end
     end
 
-    critter = maybe_award_critter(@journal_entry)
+    critter = maybe_award_critter(@journal_entry, current_user)
+    award_critters_to_collaborators(@journal_entry)
 
     if critter
       redirect_to critter_path(critter)
@@ -118,10 +119,16 @@ class JournalEntriesController < ApplicationController
 
   private
 
-  def maybe_award_critter(journal_entry)
-    return nil unless current_user.can_earn_critter?
+  def maybe_award_critter(journal_entry, user)
+    return nil unless user.can_earn_critter?
 
-    current_user.critters.create!(variant: Critter::VARIANTS.sample, journal_entry: journal_entry)
+    user.critters.create!(variant: Critter::VARIANTS.sample, journal_entry: journal_entry)
+  end
+
+  def award_critters_to_collaborators(journal_entry)
+    journal_entry.collaborator_users.each do |collab_user|
+      maybe_award_critter(journal_entry, collab_user)
+    end
   end
 
   # Strip owner PII and internal fields before exposing to frontend

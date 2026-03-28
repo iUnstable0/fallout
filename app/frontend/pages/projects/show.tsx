@@ -1,9 +1,12 @@
 import { useState, useMemo } from 'react'
+import { router } from '@inertiajs/react'
 import { Modal, ModalLink } from '@inertiaui/modal-react'
 import { BookOpenIcon, ClockIcon } from '@heroicons/react/16/solid'
 import BookLayout from '@/components/shared/BookLayout'
 import Button from '@/components/shared/Button'
 import InlineUser from '@/components/shared/InlineUser'
+import Input from '@/components/shared/Input'
+import { notify } from '@/lib/notifications'
 import TimeAgo from '@/components/shared/TimeAgo'
 import Timeline from '@/components/shared/Timeline'
 import type { ProjectDetail, JournalEntryCard, CollaboratorInfo, ShipEvent } from '@/types'
@@ -72,6 +75,33 @@ export default function ProjectsShow({
   is_modal?: boolean
 }) {
   const [rightTab, setRightTab] = useState<'timeline' | 'journal'>('timeline')
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviting, setInviting] = useState(false)
+  const [inviteError, setInviteError] = useState<string | null>(null)
+
+  function sendInvite(e: React.FormEvent) {
+    e.preventDefault()
+    const email = inviteEmail.trim()
+    if (!email || inviting) return
+    setInviting(true)
+    setInviteError(null)
+
+    router.post(
+      `/projects/${project.id}/collaboration_invites`,
+      { email },
+      {
+        preserveState: true,
+        onSuccess: () => {
+          setInviteEmail('')
+          notify('notice', `Invite sent to ${email}!`)
+        },
+        onError: (errors) => {
+          setInviteError(errors.email?.[0] || 'Failed to send invite.')
+        },
+        onFinish: () => setInviting(false),
+      },
+    )
+  }
 
   const timelineEvents = useMemo<TimelineEvent[]>(() => {
     const events: TimelineEvent[] = [
@@ -170,6 +200,27 @@ export default function ProjectsShow({
           </span>
         </div>
 
+        {can.manage_collaborators && (
+          <div className="mt-6">
+            <form onSubmit={sendInvite} className="flex gap-2 items-start">
+              <div className="flex-1">
+                <Input
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  placeholder="Add collaborator by email..."
+                  disabled={inviting}
+                  className="py-2 text-sm"
+                />
+                {inviteError && <p className="text-red-500 text-xs mt-1">{inviteError}</p>}
+              </div>
+              <Button type="submit" disabled={inviting || !inviteEmail.trim()} className="text-sm py-2">
+                {inviting ? 'Sending...' : 'Invite'}
+              </Button>
+            </form>
+          </div>
+        )}
+
         <div className="flex gap-4 mt-auto pt-6">
           {can.update && (
             <ModalLink
@@ -180,9 +231,11 @@ export default function ProjectsShow({
               Edit
             </ModalLink>
           )}
-          <Button disabled className="px-6 py-2">
-            Submit
-          </Button>
+          {can.update && (
+            <Button disabled className="px-6 py-2">
+              Submit
+            </Button>
+          )}
         </div>
       </div>
 
@@ -222,7 +275,7 @@ export default function ProjectsShow({
                         }
                       >
                         <div
-                          className="prose prose-sm max-w-none text-dark-brown"
+                          className="prose prose-sm max-w-none text-dark-brown wrap-break-word [&_img]:max-h-48 [&_img]:w-auto"
                           dangerouslySetInnerHTML={{ __html: entry.content_html }}
                         />
                       </Timeline.DetailItem>
@@ -287,7 +340,7 @@ export default function ProjectsShow({
                       </h3>
                       <p className="text-sm text-dark-brown mb-2">{formatTime(entry.time_logged)} tracked</p>
                       <div
-                        className="prose prose-sm max-w-none text-dark-brown"
+                        className="prose prose-sm max-w-none text-dark-brown wrap-break-word [&_img]:max-h-48 [&_img]:w-auto"
                         dangerouslySetInnerHTML={{ __html: entry.content_html }}
                       />
                     </div>

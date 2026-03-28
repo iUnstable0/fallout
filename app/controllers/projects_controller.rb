@@ -43,10 +43,6 @@ class ProjectsController < ApplicationController
       collaborators: collab_enabled ? @project.collaborators.includes(:user).map { |c|
         { id: c.id, user_id: c.user.id, display_name: c.user.display_name, avatar: c.user.avatar }
       } : [],
-      pending_invites: collab_enabled && policy(@project).manage_collaborators? ?
-        @project.collaboration_invites.pending.includes(:invitee).map { |i|
-          { id: i.id, invitee_display_name: i.invitee.display_name, invitee_avatar: i.invitee.avatar, created_at: i.created_at.strftime("%B %d, %Y") }
-        } : [],
       ships: @project.ships.order(created_at: :desc).map { |s|
         { id: s.id, status: s.status, created_at_iso: s.created_at.iso8601 }
       },

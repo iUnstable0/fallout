@@ -4,6 +4,7 @@ import { Modal } from '@inertiaui/modal-react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import Frame from '@/components/shared/Frame'
+import Button from '@/components/shared/Button'
 import type { MailDetail } from '@/types'
 
 type PageProps = {
@@ -19,7 +20,7 @@ function MailShow({ mail, is_modal }: PageProps) {
   const content = (
     <div className="w-full h-full overflow-y-auto p-6">
       <h1 className="font-bold text-2xl text-dark-brown mb-1">{mail.summary}</h1>
-      <p className="text-sm text-dark-brown/40 mb-6">{mail.created_at}</p>
+      <p className="text-sm text-brown mb-6">{mail.created_at}</p>
 
       {mail.content && (
         <div className="prose prose-sm max-w-none text-dark-brown mb-6">
@@ -31,18 +32,15 @@ function MailShow({ mail, is_modal }: PageProps) {
         {mail.action_url && (
           <a
             href={mail.action_url}
-            className="px-4 py-2 bg-dark-brown text-white rounded-lg font-bold hover:opacity-90"
+            className="py-1.5 px-4 border-2 font-bold uppercase bg-dark-brown text-light-brown border-dark-brown cursor-pointer hover:opacity-80"
           >
             View
           </a>
         )}
         {mail.dismissable && (
-          <button
-            onClick={handleDismiss}
-            className="px-4 py-2 border-2 border-dark-brown/30 text-dark-brown/60 rounded-lg hover:border-dark-brown/50 cursor-pointer"
-          >
+          <Button onClick={handleDismiss} className="bg-light-brown text-dark-brown">
             Dismiss
-          </button>
+          </Button>
         )}
       </div>
     </div>

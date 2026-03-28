@@ -356,7 +356,7 @@ function NewJournal({
                         return next
                       })
                     }}
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm cursor-pointer transition-colors ${selected ? 'bg-dark-brown text-light-brown' : 'bg-brown text-light-brown hover:bg-dark-brown'}`}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm cursor-pointer transition-all ${selected ? 'bg-dark-brown text-light-brown' : 'bg-brown text-light-brown hover:bg-dark-brown opacity-50'}`}
                   >
                     <img src={c.avatar} alt="" className="w-5 h-5 rounded-full" />
                     {c.display_name}
@@ -530,7 +530,6 @@ function NewJournal({
                     return next
                   })
                 }}
-                selectedProject={selectedProject}
               />
             </Deferred>
           </div>
@@ -686,41 +685,24 @@ function LookoutTimelapseBrowser({
   recordings,
   selectedIds,
   onToggle,
-  selectedProject,
 }: {
   recordings: LookoutRecording[]
   selectedIds: Set<string>
   onToggle: (token: string) => void
-  selectedProject: Project | null
 }) {
-  if (recordings.length === 0) {
-    return (
-      <div className="p-6 flex flex-col items-center gap-3">
-        <p className="text-dark-brown">No recordings found</p>
-        {selectedProject && (
-          <a
-            href="/lookout_sessions/new"
-            className="py-1.5 px-4 border-2 font-bold uppercase cursor-pointer bg-brown text-light-brown border-dark-brown"
-          >
-            Record New Timelapse
-          </a>
-        )}
-      </div>
-    )
-  }
-
   return (
     <div className="flex flex-col gap-4">
-      {selectedProject && (
-        <div className="flex justify-center">
-          <a
-            href="/lookout_sessions/new"
-            className="py-1.5 px-4 border-2 font-bold uppercase cursor-pointer bg-brown text-light-brown border-dark-brown text-sm"
-          >
-            Record New Timelapse
-          </a>
-        </div>
-      )}
+      <div className="flex justify-center">
+        <a
+          href="/lookout_sessions/new"
+          className="py-1.5 px-4 border-2 font-bold uppercase cursor-pointer bg-brown text-light-brown border-dark-brown text-sm"
+        >
+          Record New Timelapse
+        </a>
+      </div>
+      {recordings.length === 0 ? (
+        <p className="text-dark-brown text-center">No recordings found</p>
+      ) : (
       <div className="grid grid-cols-2 gap-4">
         {recordings.map((recording) => {
           const selected = selectedIds.has(recording.token)
@@ -760,6 +742,7 @@ function LookoutTimelapseBrowser({
           )
         })}
       </div>
+      )}
     </div>
   )
 }
@@ -780,7 +763,6 @@ function LookoutTimelapseSkeleton() {
         recordings={SKELETON_LOOKOUT}
         selectedIds={new Set()}
         onToggle={() => {}}
-        selectedProject={null}
       />
     </div>
   )

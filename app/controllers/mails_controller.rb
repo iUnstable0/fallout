@@ -53,15 +53,20 @@ class MailsController < ApplicationController
   private
 
   def serialize_mail_item(mail, read_ids)
-    {
+    item = {
       id: mail.id,
       summary: mail.summary,
       pinned: mail.pinned,
       dismissable: mail.dismissable,
       action_url: mail.action_url,
       is_read: read_ids.include?(mail.id),
+      source_type: mail.source_type,
       created_at: mail.created_at.strftime("%b %d, %Y")
     }
+
+    item[:invite_id] = mail.source_id if mail.source_type == "CollaborationInvite"
+
+    item
   end
 
   def serialize_mail_detail(mail)

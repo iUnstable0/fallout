@@ -9,19 +9,18 @@ class Projects::CollaborationInvitesController < ApplicationController
   def create
     authorize @project, :manage_collaborators? # Only project owner can send invites
 
+    # Always respond with the same success message to prevent email enumeration.
+    # Invalid emails, already-invited users, and duplicate invites all appear identical to the caller.
     invitee = User.verified.kept.find_by(email: params[:email]&.strip&.downcase)
-    unless invitee
-      redirect_back fallback_location: project_path(@project), inertia: { errors: { email: [ "No verified user found with that email." ] } }
-      return
+
+    if invitee
+      invite = @project.collaboration_invites.build(inviter: current_user, invitee: invitee)
+      if invite.save
+        MailDeliveryService.collaboration_invite_sent(invite)
+      end
     end
 
-    invite = @project.collaboration_invites.build(inviter: current_user, invitee: invitee)
-    if invite.save
-      MailDeliveryService.collaboration_invite_sent(invite)
-      redirect_back fallback_location: project_path(@project), notice: "Invite sent to #{invitee.display_name}."
-    else
-      redirect_back fallback_location: project_path(@project), inertia: { errors: { email: invite.errors.full_messages } }
-    end
+    redirect_back fallback_location: project_path(@project), notice: "Invite sent!"
   end
 
   def destroy

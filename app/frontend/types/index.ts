@@ -37,6 +37,8 @@ export interface MailItem {
   dismissable: boolean
   action_url: string | null
   is_read: boolean
+  source_type: string | null
+  invite_id?: number
   created_at: string
 }
 

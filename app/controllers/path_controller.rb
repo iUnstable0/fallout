@@ -4,7 +4,16 @@ class PathController < ApplicationController
   skip_after_action :verify_policy_scoped, only: %i[index] # No scoped collection
 
   def index
-    journal_entries = current_user.journal_entries.kept.includes(:critter).order(:created_at)
+    # Include both owned and collaborated journal entries for path progression
+    owned = current_user.journal_entries.kept
+    collaborated_ids = if collaborators_enabled?
+      Collaborator.kept.where(user: current_user, collaboratable_type: "JournalEntry").select(:collaboratable_id)
+    end
+    journal_entries = if collaborated_ids
+      owned.or(JournalEntry.kept.where(id: collaborated_ids))
+    else
+      owned
+    end.includes(:critters).order(:created_at)
 
     render inertia: {
       user: {
@@ -16,7 +25,7 @@ class PathController < ApplicationController
       has_projects: current_user.projects.kept.exists? || (collaborators_enabled? && Collaborator.kept.where(user: current_user, collaboratable_type: "Project").exists?),
       journal_entry_count: journal_entries.size,
       # Critter variant per journal entry (by creation order), nil if no critter was awarded
-      critter_variants: journal_entries.map { |je| je.critter&.variant }
+      critter_variants: journal_entries.map { |je| je.critters.find { |c| c.user_id == current_user.id }&.variant }
     }
   end
 end

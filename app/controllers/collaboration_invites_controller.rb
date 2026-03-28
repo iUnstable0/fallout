@@ -23,14 +23,16 @@ class CollaborationInvitesController < ApplicationController
       @invite.project.collaborators.create!(user: @invite.invitee)
     end
 
-    redirect_to project_path(@invite.project), notice: "You are now a collaborator on #{@invite.project.name}."
+    dismiss_associated_mail(@invite)
+    redirect_back fallback_location: path_path, notice: "You are now a collaborator on #{@invite.project.name}."
   end
 
   def decline
     authorize @invite # Only the invitee can decline, and only while pending
 
     @invite.declined!
-    redirect_to path_path, notice: "Invite declined."
+    dismiss_associated_mail(@invite)
+    redirect_back fallback_location: path_path, notice: "Invite declined."
   end
 
   private
@@ -54,5 +56,13 @@ class CollaborationInvitesController < ApplicationController
       inviter_avatar: invite.inviter.avatar,
       created_at: invite.created_at.strftime("%B %d, %Y")
     }
+  end
+
+  def dismiss_associated_mail(invite)
+    mail = MailMessage.find_by(source: invite, user: invite.invitee)
+    return unless mail
+
+    interaction = invite.invitee.mail_interactions.find_or_initialize_by(mail_message: mail)
+    interaction.update!(dismissed_at: Time.current)
   end
 end
