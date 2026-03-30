@@ -641,7 +641,7 @@ export default function LandingIndex() {
                 get a certificate recognized by
               </p>
 
-              <div className="flex flex-col items-center gap-6 md:gap-8 w-[67%] md:w-full max-w-4xl">
+              <div className="flex flex-col items-center gap-6 md:gap-8 w-full max-w-4xl">
                 <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16">
                   <div className="relative inline-block flex-shrink-0">
                     <img
