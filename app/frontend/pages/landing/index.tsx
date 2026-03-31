@@ -414,7 +414,7 @@ export default function LandingIndex() {
             </div>
 
             <h1 className="shake text-center tracking-[5%] text-shadow-md text-shadow-blue font-outfit text-2xl md:text-6xl font-semibold max-w-5xl">
-              Build hardware projects for 60h, Visit Shenzhen, China!
+              Build hardware projects, Visit Shenzhen, China!
             </h1>
             <p className="text-base md:text-2xl tracking-[5%] text-center ">Beginner-friendly, for teens 13-18.</p>
             <Frame className="w-full max-w-[calc(100%-1rem)] sm:max-w-160 ml-1">
