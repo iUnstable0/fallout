@@ -66,6 +66,15 @@ module ShipChecks
       end
     end
 
+    public
+
+    # True when repo_link points to a non-GitHub host (GitLab, self-hosted, etc.)
+    def non_github_repo?
+      project.repo_link.present? && github_nwo.nil?
+    end
+
+    private
+
     def github_api(path)
       return nil unless github_nwo
       uri = URI("https://api.github.com#{path}")

@@ -18,7 +18,7 @@ module ShipChecks
 
     def self.call(ctx)
       tree = ctx.repo_tree
-      return skip("Repository not accessible") if tree.nil?
+      return skip(ctx.non_github_repo? ? "Skipped (non-GitHub repository)" : "Repository not accessible") if tree.nil?
 
       repo_nwo = ctx.repo_meta&.dig("full_name")
       return skip("Repository metadata not available") unless repo_nwo

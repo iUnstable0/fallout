@@ -12,6 +12,14 @@ module ShipChecks
         )
       end
 
+      # Non-GitHub repos (GitLab, self-hosted, etc.) can't be checked via the GitHub API
+      if ctx.non_github_repo?
+        return ShipCheckService::CheckResult.new(
+          key: "repo_is_public", label: DEFINITION[:label],
+          status: :skipped, message: "Skipped (non-GitHub repository)", visibility: :user
+        )
+      end
+
       passed = ctx.repo_meta.present?
       ShipCheckService::CheckResult.new(
         key: "repo_is_public",

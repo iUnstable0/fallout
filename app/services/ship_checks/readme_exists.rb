@@ -7,9 +7,10 @@ module ShipChecks
     def self.call(ctx)
       tree = ctx.repo_tree
       if tree.nil?
+        msg = ctx.non_github_repo? ? "Skipped (non-GitHub repository)" : "Repository not accessible"
         return ShipCheckService::CheckResult.new(
           key: "readme_exists", label: DEFINITION[:label],
-          status: :skipped, message: "Repository not accessible", visibility: :user
+          status: :skipped, message: msg, visibility: :user
         )
       end
 
