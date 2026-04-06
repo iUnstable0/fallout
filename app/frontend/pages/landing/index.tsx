@@ -61,7 +61,7 @@ export default function LandingIndex() {
   useEffect(() => {
     if ('ontouchstart' in window) return
     const style = document.createElement('style')
-    style.textContent = '*, *::before, *::after { cursor: none !important; }'
+    style.textContent = '*, *::before, *::after { cursor: none !important; } iframe { cursor: auto !important; }'
     document.head.appendChild(style)
     return () => {
       document.head.removeChild(style)
@@ -282,6 +282,17 @@ export default function LandingIndex() {
       }
       window.addEventListener('blur', onWindowBlur)
       stickerCleanups.push(() => window.removeEventListener('blur', onWindowBlur))
+
+      // iframes capture mouse events so mousemove stops firing over them; hide custom cursor there
+      const iframe = iframeRef.current
+      if (iframe) {
+        const onIframeEnter = () => {
+          gsap.set(customCursor, { opacity: 0 })
+          if (pointerCursor) gsap.set(pointerCursor, { opacity: 0 })
+        }
+        iframe.addEventListener('mouseenter', onIframeEnter)
+        stickerCleanups.push(() => iframe.removeEventListener('mouseenter', onIframeEnter))
+      }
     }
 
     const hero = document.getElementById('hero')!
